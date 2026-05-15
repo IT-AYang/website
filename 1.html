@@ -458,8 +458,15 @@
 
         .queue-list {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden;
             padding: 10px;
+            position: relative;
+        }
+
+        .queue-items-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
 
         .queue-item {
@@ -732,78 +739,8 @@
 
             <div class="queue-card">
                 <div class="panel-header">当前月台排队信息</div>
-                <div class="queue-list">
-                    <div class="queue-item">
-                        <div class="vehicle-icon">🚛</div>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">川V96352</div>
-                            <div class="vehicle-order">订单号: ZC88745616768</div>
-                            <div class="vehicle-meta">
-                                <span>司机: 蒋芳</span>
-                                <span>电话: 132****4057</span>
-                            </div>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                    <div class="queue-item">
-                        <div class="vehicle-icon">🚛</div>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">川Y22477</div>
-                            <div class="vehicle-order">订单号: ZC65355036818</div>
-                            <div class="vehicle-meta">
-                                <span>司机: 苏平</span>
-                                <span>电话: 132****7813</span>
-                            </div>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                    <div class="queue-item danger">
-                        <div class="vehicle-icon danger">🚛</div>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">川Z01571 <span class="danger-badge">危险品</span></div>
-                            <div class="vehicle-order">订单号: ZC38304179930</div>
-                            <div class="vehicle-meta">
-                                <span>司机: 史杰</span>
-                                <span>电话: 132****6819</span>
-                            </div>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                    <div class="queue-item danger">
-                        <div class="vehicle-icon danger">🚛</div>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">川Q94855 <span class="danger-badge">危险品</span></div>
-                            <div class="vehicle-order">订单号: ZC23353748279</div>
-                            <div class="vehicle-meta">
-                                <span>司机: 魏艳</span>
-                                <span>电话: 132****5361</span>
-                            </div>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                    <div class="queue-item">
-                        <div class="vehicle-icon">🚛</div>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">川L85330</div>
-                            <div class="vehicle-order">订单号: ZC59119283758</div>
-                            <div class="vehicle-meta">
-                                <span>司机: 罗娟</span>
-                                <span>电话: 132****5691</span>
-                            </div>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                    <div class="queue-item danger">
-                        <div class="vehicle-icon danger">🚛</div>
-                        <div class="vehicle-info">
-                            <div class="vehicle-plate">川E58857 <span class="danger-badge">危险品</span></div>
-                            <div class="vehicle-order">订单号: ZC48098312825</div>
-                            <div class="vehicle-meta">
-                                <span>司机: 冯丽</span>
-                                <span>电话: 132****4005</span>
-                            </div>
-                        </div>
-                        <span class="arrow-icon">›</span>
+                <div class="queue-list" id="queueList">
+                    <div class="queue-items-wrapper" id="queueItemsWrapper">
                     </div>
                 </div>
             </div>
@@ -834,6 +771,25 @@
             { plate: '川S34478', order: 'ZC51817559479', goods: '钙', status: 'unloading', time: '2026-05-15' },
             { plate: '川T13827', order: 'ZC74817481218', goods: '钠', status: 'unloading', time: '2026-05-15' }
         ];
+
+        const queueData = [
+            { plate: '川V96352', order: 'ZC88745616768', driver: '蒋芳', phone: '132****4057', isDanger: false },
+            { plate: '川Y22477', order: 'ZC65355036818', driver: '苏平', phone: '132****7813', isDanger: false },
+            { plate: '川Z01571', order: 'ZC38304179930', driver: '史杰', phone: '132****6819', isDanger: true },
+            { plate: '川Q94855', order: 'ZC23353748279', driver: '魏艳', phone: '132****5361', isDanger: true },
+            { plate: '川L85330', order: 'ZC59119283758', driver: '罗娟', phone: '132****5691', isDanger: false },
+            { plate: '川E58857', order: 'ZC48098312825', driver: '冯丽', phone: '132****4005', isDanger: true },
+            { plate: '川X37306', order: 'ZC27163666181', driver: '张伟', phone: '139****1234', isDanger: false },
+            { plate: '川W56874', order: 'ZC24817665195', driver: '李芳', phone: '138****5678', isDanger: false }
+        ];
+
+        let currentPage = 0;
+        const itemsPerPage = 3;
+        let queueAnimationId = null;
+        const queuePageDuration = 3000;
+        let queuePageStartTime = 0;
+        let isQueueAnimating = false;
+        let queueScrollPosition = 0;
 
         let displayData = [];
         let scrollPosition = 0;
@@ -941,7 +897,10 @@
             animationId = requestAnimationFrame(animateScroll);
         }
 
-        document.addEventListener('DOMContentLoaded', initScroll);
+        document.addEventListener('DOMContentLoaded', () => {
+            initScroll();
+            initQueueScroll();
+        });
 
         const tableContainer = document.getElementById('tableBodyContainer');
         if (tableContainer) {
@@ -951,6 +910,73 @@
                 scrollStartTime = 0;
                 startPosition = scrollPosition;
             });
+        }
+
+        function createQueueItem(data) {
+            const dangerClass = data.isDanger ? ' danger' : '';
+            const dangerBadge = data.isDanger ? '<span class="danger-badge">危险品</span>' : '';
+            
+            return `
+                <div class="queue-item${dangerClass}">
+                    <div class="vehicle-icon${dangerClass}">🚛</div>
+                    <div class="vehicle-info">
+                        <div class="vehicle-plate">${data.plate} ${dangerBadge}</div>
+                        <div class="vehicle-order">订单号: ${data.order}</div>
+                        <div class="vehicle-meta">
+                            <span>司机: ${data.driver}</span>
+                            <span>电话: ${data.phone}</span>
+                        </div>
+                    </div>
+                    <span class="arrow-icon">›</span>
+                </div>
+            `;
+        }
+
+        function renderQueueList() {
+            const wrapper = document.getElementById('queueItemsWrapper');
+            const allData = [...queueData, ...queueData];
+            wrapper.innerHTML = allData.map(item => createQueueItem(item)).join('');
+        }
+
+        function animateQueueScroll(timestamp) {
+            const wrapper = document.getElementById('queueItemsWrapper');
+            
+            const queueItem = document.querySelector('.queue-item');
+            let itemHeight = 0;
+            if (queueItem) {
+                itemHeight = queueItem.offsetHeight + 10;
+            }
+            
+            const scrollAmount = itemHeight * itemsPerPage;
+            
+            if (!queuePageStartTime) {
+                queuePageStartTime = timestamp;
+            }
+            
+            const elapsed = timestamp - queuePageStartTime;
+            
+            if (elapsed < queuePageDuration) {
+                const progress = elapsed / queuePageDuration;
+                const easedProgress = 1 - Math.pow(1 - progress, 3);
+                queueScrollPosition = easedProgress * scrollAmount;
+                
+                wrapper.style.transform = `translateY(-${queueScrollPosition}px)`;
+            } else {
+                queueScrollPosition = 0;
+                queuePageStartTime = timestamp;
+                
+                const firstItem = queueData.shift();
+                queueData.push(firstItem);
+                
+                renderQueueList();
+            }
+            
+            queueAnimationId = requestAnimationFrame(animateQueueScroll);
+        }
+
+        function initQueueScroll() {
+            renderQueueList();
+            queueAnimationId = requestAnimationFrame(animateQueueScroll);
         }
     </script>
 </body>
