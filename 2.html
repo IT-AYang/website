@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>厂内物流园区看板</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1628 0%, #0d2137 50%, #0a1628 100%);
+            min-height: 100vh;
+            font-family: 'Microsoft YaHei', 'PingFang SC', sans-serif;
+            color: #c0d4e8;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(90deg, #0a1628 0%, #1a3a5c 50%, #0a1628 100%);
+            padding: 15px 20px;
+            text-align: center;
+            border-bottom: 3px solid #00d4ff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before, .header::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            width: 100px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.1), transparent);
+        }
+
+        .header::before {
+            left: 0;
+        }
+
+        .header::after {
+            right: 0;
+        }
+
+        .header-title {
+            font-size: 36px;
+            font-weight: bold;
+            color: #00d4ff;
+            text-shadow: 0 0 20px rgba(0, 212, 255, 0.5);
+            letter-spacing: 8px;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 15px;
+            padding: 15px;
+            height: calc(100vh - 80px);
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .map-container {
+            background: rgba(10, 22, 40, 0.9);
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.8;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .bottom-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .card {
+            background: rgba(10, 22, 40, 0.9);
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .card-header {
+            font-size: 18px;
+            font-weight: bold;
+            color: #00d4ff;
+            margin-bottom: 20px;
+            padding-left: 15px;
+            border-left: 4px solid #00d4ff;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        .stat-item {
+            background: rgba(26, 58, 92, 0.5);
+            border: 1px solid rgba(0, 212, 255, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0066cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-icon.warning {
+            background: linear-gradient(135deg, #ff6b35, #cc4422);
+        }
+
+        .stat-icon.danger {
+            background: linear-gradient(135deg, #ff4444, #cc2222);
+        }
+
+        .stat-icon.purple {
+            background: linear-gradient(135deg, #9966ff, #6633cc);
+        }
+
+        .stat-icon.yellow {
+            background: linear-gradient(135deg, #ffcc33, #cc9900);
+        }
+
+        .stat-icon.cyan {
+            background: linear-gradient(135deg, #00e59e, #00aa66);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b8cb8;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: #00e59e;
+        }
+
+        .stat-value.cyan {
+            color: #00d4ff;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .cargo-info-card {
+            background: rgba(10, 22, 40, 0.9);
+            border: 1px solid #1e3a5f;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .cargo-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .cargo-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(26, 58, 92, 0.5);
+            border-radius: 6px;
+            border-left: 3px solid #00d4ff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .cargo-item:hover {
+            background: rgba(0, 212, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .cargo-item.danger {
+            border-left-color: #ff4444;
+        }
+
+        .cargo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #00d4ff, #0066cc);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            margin-right: 12px;
+        }
+
+        .cargo-icon.danger {
+            background: linear-gradient(135deg, #ff4444, #cc2222);
+        }
+
+        .cargo-details {
+            flex: 1;
+        }
+
+        .cargo-plate {
+            font-size: 14px;
+            font-weight: bold;
+            color: #c0d4e8;
+            margin-bottom: 4px;
+        }
+
+        .cargo-order {
+            font-size: 11px;
+            color: #6b8cb8;
+            margin-bottom: 4px;
+        }
+
+        .cargo-meta {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: #6b8cb8;
+        }
+
+        .danger-badge {
+            background: #ff4444;
+            color: #fff;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .arrow-icon {
+            color: #6b8cb8;
+            font-size: 14px;
+        }
+
+        .appointment-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .appointment-table th {
+            background: linear-gradient(90deg, #0d3057 0%, #1a4a7a 100%);
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: bold;
+            color: #8ec5fc;
+        }
+
+        .appointment-table td {
+            padding: 8px;
+            border-bottom: 1px solid rgba(30, 58, 95, 0.5);
+            color: #c0d4e8;
+        }
+
+        .appointment-table tr:hover td {
+            background: rgba(0, 212, 255, 0.05);
+        }
+
+        .pie-charts {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 20px;
+        }
+
+        .pie-chart {
+            text-align: center;
+        }
+
+        .pie-chart-circle {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+        }
+
+        .pie-chart-circle.blue {
+            background: conic-gradient(
+                #00d4ff 0deg 252deg,
+                rgba(0, 212, 255, 0.2) 252deg 360deg
+            );
+            border: 3px solid #00d4ff;
+        }
+
+        .pie-chart-circle.red {
+            background: conic-gradient(
+                #ff4444 0deg 25deg,
+                rgba(255, 68, 68, 0.2) 25deg 360deg
+            );
+            border: 3px solid #ff4444;
+        }
+
+        .pie-chart-circle-inner {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(10, 22, 40, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pie-chart-value {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .pie-chart-value.blue {
+            color: #00d4ff;
+        }
+
+        .pie-chart-value.red {
+            color: #ff4444;
+        }
+
+        .pie-chart-label {
+            font-size: 12px;
+            color: #6b8cb8;
+        }
+
+        .decorative-corner {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            border: 3px solid #00d4ff;
+        }
+
+        .decorative-corner.top-left {
+            top: -1px;
+            left: -1px;
+            border-right: none;
+            border-bottom: none;
+        }
+
+        .decorative-corner.top-right {
+            top: -1px;
+            right: -1px;
+            border-left: none;
+            border-bottom: none;
+        }
+
+        .decorative-corner.bottom-left {
+            bottom: -1px;
+            left: -1px;
+            border-right: none;
+            border-top: none;
+        }
+
+        .decorative-corner.bottom-right {
+            bottom: -1px;
+            right: -1px;
+            border-left: none;
+            border-top: none;
+        }
+
+        .card-content {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1 class="header-title">厂内物流园区看板</h1>
+    </div>
+
+    <div class="main-content">
+        <div class="left-panel">
+            <div class="map-container">
+                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #0a1a30 0%, #0d2847 50%, #0a1a30 100%);">
+                    <svg viewBox="0 0 800 500" style="width: 100%; height: 100%;">
+                        <path d="M50,50 Q100,20 200,30 Q350,10 500,40 Q650,20 750,60 Q780,150 770,250 Q780,350 750,450 Q600,480 400,470 Q200,480 50,440 Q20,350 30,250 Q20,150 50,50" fill="none" stroke="#00d4ff" stroke-width="2" fill="rgba(0, 212, 255, 0.05)"/>
+                        
+                        <circle cx="150" cy="150" r="15" fill="#ff8c42"/>
+                        <text x="150" y="145" text-anchor="middle" fill="#ffffff" font-size="14">🏠</text>
+                        
+                        <circle cx="350" cy="120" r="15" fill="#00e59e"/>
+                        <text x="350" y="115" text-anchor="middle" fill="#ffffff" font-size="14">🏛️</text>
+                        
+                        <circle cx="280" cy="300" r="15" fill="#ff8c42"/>
+                        <text x="280" y="295" text-anchor="middle" fill="#ffffff" font-size="14">🏠</text>
+                        
+                        <circle cx="550" cy="100" r="15" fill="#00e59e"/>
+                        <text x="550" y="95" text-anchor="middle" fill="#ffffff" font-size="14">🏛️</text>
+                        
+                        <circle cx="680" cy="150" r="15" fill="#ff8c42"/>
+                        <text x="680" y="145" text-anchor="middle" fill="#ffffff" font-size="14">🏠</text>
+                        
+                        <circle cx="350" cy="250" r="20" fill="#00d4ff"/>
+                        <text x="350" y="245" text-anchor="middle" fill="#ffffff" font-size="16">🚚</text>
+                        
+                        <circle cx="480" cy="120" r="20" fill="#9966ff"/>
+                        <text x="480" y="115" text-anchor="middle" fill="#ffffff" font-size="16">🚛</text>
+                        
+                        <circle cx="280" cy="120" r="20" fill="#9966ff"/>
+                        <text x="280" y="115" text-anchor="middle" fill="#ffffff" font-size="16">🚛</text>
+                        
+                        <circle cx="720" cy="280" r="20" fill="#00d4ff"/>
+                        <text x="720" y="275" text-anchor="middle" fill="#ffffff" font-size="16">🚚</text>
+                        
+                        <circle cx="100" cy="200" r="20" fill="#ff4444"/>
+                        <text x="100" y="195" text-anchor="middle" fill="#ffffff" font-size="16">🚛</text>
+                        <text x="100" y="210" text-anchor="middle" fill="#ff4444" font-size="12">☠️</text>
+                        
+                        <circle cx="650" cy="300" r="15" fill="#ff4444"/>
+                        <text x="650" y="295" text-anchor="middle" fill="#ffffff" font-size="14">🚗</text>
+                        
+                        <circle cx="550" cy="50" r="12" fill="#00e59e"/>
+                        <text x="550" y="45" text-anchor="middle" fill="#ffffff" font-size="12">🚌</text>
+                        
+                        <rect x="320" y="70" width="80" height="40" rx="5" fill="rgba(0, 100, 200, 0.7)" stroke="#00d4ff" stroke-width="2"/>
+                        <text x="360" y="95" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">2号大门</text>
+                        
+                        <rect x="650" y="250" width="80" height="40" rx="5" fill="rgba(0, 100, 200, 0.7)" stroke="#00d4ff" stroke-width="2"/>
+                        <text x="690" y="275" text-anchor="middle" fill="#ffffff" font-size="12" font-weight="bold">1号大门</text>
+                        
+                        <path d="M360,110 L360,75" stroke="#00d4ff" stroke-width="2" stroke-dasharray="5,3"/>
+                        <path d="M690,290 L690,295" stroke="#00d4ff" stroke-width="2" stroke-dasharray="5,3"/>
+                        
+                        <path d="M360,110 Q500,120 550,100 Q600,90 650,95" stroke="rgba(0, 212, 255, 0.3)" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                        
+                        <path d="M360,110 Q400,150 480,120 Q550,100 600,130 Q680,160 690,295" stroke="rgba(255, 68, 68, 0.3)" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                        
+                        <path d="M50,300 Q100,250 150,200 Q200,150 280,120 Q320,100 360,110" stroke="rgba(0, 212, 255, 0.3)" stroke-width="2" stroke-dasharray="5,5" fill="none"/>
+                        
+                        <path d="M50,280 Q150,200 280,280 Q350,350 450,300 Q550,250 650,300 Q700,350 750,380" stroke="rgba(0, 100, 200, 0.4)" stroke-width="3" fill="none"/>
+                        
+                        <text x="250" y="80" text-anchor="middle" fill="#6b8cb8" font-size="10">碧阳镇委员会</text>
+                        <text x="350" y="180" text-anchor="middle" fill="#6b8cb8" font-size="10">黟县黄士陵</text>
+                        <text x="450" y="200" text-anchor="middle" fill="#6b8cb8" font-size="10">漳河滨水公园</text>
+                        <text x="200" y="350" text-anchor="middle" fill="#6b8cb8" font-size="10">南屏古镇</text>
+                        <text x="550" y="350" text-anchor="middle" fill="#6b8cb8" font-size="10">西递镇人大</text>
+                        <text x="650" y="200" text-anchor="middle" fill="#6b8cb8" font-size="10">西递古村景区</text>
+                        <text x="500" y="160" text-anchor="middle" fill="#6b8cb8" font-size="10">屏山(中国风水文化名村)</text>
+                        <text x="380" y="80" text-anchor="middle" fill="#6b8cb8" font-size="10">黄泥尖</text>
+                        <text x="650" y="70" text-anchor="middle" fill="#6b8cb8" font-size="10">三姑尖</text>
+                        <text x="150" y="60" text-anchor="middle" fill="#6b8cb8" font-size="10">黟县职业中学</text>
+                        <text x="100" y="320" text-anchor="middle" fill="#6b8cb8" font-size="10">守拙园</text>
+                    </svg>
+                </div>
+            </div>
+
+            <div class="bottom-cards">
+                <div class="card">
+                    <div class="card-content">
+                        <div class="decorative-corner top-left"></div>
+                        <div class="decorative-corner top-right"></div>
+                        <div class="decorative-corner bottom-left"></div>
+                        <div class="decorative-corner bottom-right"></div>
+                        
+                        <div class="card-header">今日车辆统计</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon">🚚</div>
+                                <div>
+                                    <div class="stat-label">预约车辆</div>
+                                    <div class="stat-value cyan">100</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon cyan">🚚</div>
+                                <div>
+                                    <div class="stat-label">已入园车辆数</div>
+                                    <div class="stat-value cyan">3</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon purple">🚚</div>
+                                <div>
+                                    <div class="stat-label">未入园车辆数</div>
+                                    <div class="stat-value cyan">97</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card-header" style="margin-top: 30px;">危险品车辆统计</div>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <div class="stat-icon danger">🚚</div>
+                                <div>
+                                    <div class="stat-label">当前危险品车辆数</div>
+                                    <div class="stat-value cyan">100</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon yellow">🚚</div>
+                                <div>
+                                    <div class="stat-label">外来危险品车辆数</div>
+                                    <div class="stat-value cyan">3</div>
+                                </div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-icon purple">🚚</div>
+                                <div>
+                                    <div class="stat-label">园内危险品车辆数</div>
+                                    <div class="stat-value cyan">100</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-content">
+                        <div class="decorative-corner top-left"></div>
+                        <div class="decorative-corner top-right"></div>
+                        <div class="decorative-corner bottom-left"></div>
+                        <div class="decorative-corner bottom-right"></div>
+                        
+                        <div class="card-header">外来车辆实时统计</div>
+                        <div class="pie-charts">
+                            <div class="pie-chart">
+                                <div class="pie-chart-circle blue">
+                                    <div class="pie-chart-circle-inner">
+                                        <span class="pie-chart-value blue">99</span>
+                                    </div>
+                                </div>
+                                <div class="pie-chart-label">外来车辆数</div>
+                            </div>
+                            <div class="pie-chart">
+                                <div class="pie-chart-circle red">
+                                    <div class="pie-chart-circle-inner">
+                                        <span class="pie-chart-value red">1</span>
+                                    </div>
+                                </div>
+                                <div class="pie-chart-label">外来危险品车辆数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="right-panel">
+            <div class="cargo-info-card">
+                <div class="card-content">
+                    <div class="decorative-corner top-left"></div>
+                    <div class="decorative-corner top-right"></div>
+                    <div class="decorative-corner bottom-left"></div>
+                    <div class="decorative-corner bottom-right"></div>
+                    
+                    <div class="card-header">货物信息统计</div>
+                    <div class="cargo-list">
+                        <div class="cargo-item">
+                            <div class="cargo-icon">🚚</div>
+                            <div class="cargo-details">
+                                <div class="cargo-plate">川V78134</div>
+                                <div class="cargo-order">订单号: ZC54281898453</div>
+                                <div class="cargo-meta">
+                                    <span>司机: 谢军</span>
+                                    <span>电话: 132****4417</span>
+                                </div>
+                            </div>
+                            <span class="arrow-icon">›</span>
+                        </div>
+                        <div class="cargo-item">
+                            <div class="cargo-icon">🚚</div>
+                            <div class="cargo-details">
+                                <div class="cargo-plate">川G24624</div>
+                                <div class="cargo-order">订单号: ZC89503820238</div>
+                                <div class="cargo-meta">
+                                    <span>司机: 胡勇</span>
+                                    <span>电话: 132****6791</span>
+                                </div>
+                            </div>
+                            <span class="arrow-icon">›</span>
+                        </div>
+                        <div class="cargo-item danger">
+                            <div class="cargo-icon danger">🚚</div>
+                            <div class="cargo-details">
+                                <div class="cargo-plate">川N66825 <span class="danger-badge">危险品</span></div>
+                                <div class="cargo-order">订单号: ZC59876682412</div>
+                                <div class="cargo-meta">
+                                    <span>司机: 方娜</span>
+                                    <span>电话: 132****2024</span>
+                                </div>
+                            </div>
+                            <span class="arrow-icon">›</span>
+                        </div>
+                        <div class="cargo-item">
+                            <div class="cargo-icon">🚚</div>
+                            <div class="cargo-details">
+                                <div class="cargo-plate">川R11454</div>
+                                <div class="cargo-order">订单号: ZC43961544669</div>
+                                <div class="cargo-meta">
+                                    <span>司机: 江平</span>
+                                    <span>电话: 132****0767</span>
+                                </div>
+                            </div>
+                            <span class="arrow-icon">›</span>
+                        </div>
+                        <div class="cargo-item">
+                            <div class="cargo-icon">🚚</div>
+                            <div class="cargo-details">
+                                <div class="cargo-plate">川D33016</div>
+                                <div class="cargo-order">订单号: ZC43371762940</div>
+                                <div class="cargo-meta">
+                                    <span>司机: 李磊</span>
+                                    <span>电话: 132****9523</span>
+                                </div>
+                            </div>
+                            <span class="arrow-icon">›</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-content">
+                    <div class="decorative-corner top-left"></div>
+                    <div class="decorative-corner top-right"></div>
+                    <div class="decorative-corner bottom-left"></div>
+                    <div class="decorative-corner bottom-right"></div>
+                    
+                    <div class="card-header">车辆预约信息</div>
+                    <table class="appointment-table">
+                        <thead>
+                            <tr>
+                                <th>车牌号</th>
+                                <th>物料</th>
+                                <th>月台</th>
+                                <th>地磅</th>
+                                <th>预约日期</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>川G24624</td>
+                                <td>磷</td>
+                                <td>月台8</td>
+                                <td>有</td>
+                                <td>2026-05-15</td>
+                            </tr>
+                            <tr>
+                                <td>川N66825</td>
+                                <td>钠</td>
+                                <td>月台5</td>
+                                <td>有</td>
+                                <td>2026-05-15</td>
+                            </tr>
+                            <tr>
+                                <td>川R11454</td>
+                                <td>磷</td>
+                                <td>月台8</td>
+                                <td>有</td>
+                                <td>2026-05-15</td>
+                            </tr>
+                            <tr>
+                                <td>川D33016</td>
+                                <td>硫</td>
+                                <td>月台4</td>
+                                <td>有</td>
+                                <td>2026-05-15</td>
+                            </tr>
+                            <tr>
+                                <td>川Q45330</td>
+                                <td>硫</td>
+                                <td>月台2</td>
+                                <td>有</td>
+                                <td>2026-05-15</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
