@@ -90,37 +90,60 @@
             font-size: 14px;
         }
 
-        .table-container {
-            overflow-y: auto;
-            max-height: calc(100vh - 180px);
+        .table-wrapper {
+            display: flex;
+            flex-direction: column;
+            height: calc(100vh - 120px);
         }
 
-        .data-table {
+        .table-header {
+            background: linear-gradient(90deg, #0d3057 0%, #1a4a7a 100%);
+            display: flex;
+            border-bottom: 2px solid #00d4ff;
+        }
+
+        .table-header-cell {
+            padding: 10px 5px;
+            font-weight: bold;
+            color: #8ec5fc;
+            font-size: 12px;
+            text-align: left;
+        }
+
+        .table-body-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .table-body {
+            position: absolute;
             width: 100%;
-            border-collapse: collapse;
+            left: 0;
+            top: 0;
+        }
+
+        .table-body-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .table-body-cell {
+            padding: 8px 5px;
+            border-bottom: 1px solid rgba(30, 58, 95, 0.5);
+            color: #c0d4e8;
             font-size: 12px;
         }
 
-        .data-table th {
-            background: linear-gradient(90deg, #0d3057 0%, #1a4a7a 100%);
-            padding: 8px 5px;
-            text-align: left;
-            font-weight: bold;
-            color: #8ec5fc;
-            position: sticky;
-            top: 0;
-            z-index: 1;
-        }
-
-        .data-table td {
-            padding: 6px 5px;
-            border-bottom: 1px solid rgba(30, 58, 95, 0.5);
-            color: #c0d4e8;
-        }
-
-        .data-table tr:hover {
+        .table-body-row:hover .table-body-cell {
             background: rgba(0, 212, 255, 0.05);
         }
+
+        .col-1 { width: 12%; }
+        .col-2 { width: 24%; }
+        .col-3 { width: 8%; }
+        .col-4 { width: 10%; }
+        .col-5 { width: 14%; }
 
         .status {
             display: inline-block;
@@ -536,41 +559,18 @@
     <div class="container">
         <div class="left-panel">
             <div class="panel-header">车辆装卸信息</div>
-            <div class="table-container">
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>车牌号</th>
-                            <th>订单号</th>
-                            <th>货物</th>
-                            <th>状态</th>
-                            <th>装卸时间</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>川X37306</td><td>ZC27163666181</td><td>钠</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川W56874</td><td>ZC24817665195</td><td>钙</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川V34581</td><td>ZC545436511520</td><td>磷</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川P83237</td><td>ZC12712017705</td><td>钙</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川A52951</td><td>ZC71920591835</td><td>钠</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川K74737</td><td>ZC56676130196</td><td>硫</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川G65872</td><td>ZC65773961402</td><td>钠</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川L84314</td><td>ZC05735262989</td><td>磷</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川V96352</td><td>ZC88745616768</td><td>磷</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川Y22477</td><td>ZC65355036818</td><td>钠</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川Z01571</td><td>ZC38304179930</td><td>硫</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川Q94855</td><td>ZC23353748279</td><td>硫</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川L85330</td><td>ZC59119283758</td><td>硫</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川E58857</td><td>ZC48098312825</td><td>磷</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川X89841</td><td>ZC93294199826</td><td>钙</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川O7827</td><td>ZC72259816632</td><td>磷</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川T97437</td><td>ZC35812656328</td><td>磷</td><td><span class="status status-loading">卸货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川H51196</td><td>ZC65383866526</td><td>硫</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川Y64688</td><td>ZC04208149236</td><td>磷</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川S34478</td><td>ZC51817559479</td><td>钙</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                        <tr><td>川T13827</td><td>ZC74817481218</td><td>钠</td><td><span class="status status-unloading">装货</span></td><td>2026-05-15</td></tr>
-                    </tbody>
-                </table>
+            <div class="table-wrapper">
+                <div class="table-header">
+                    <div class="table-header-cell col-1">车牌号</div>
+                    <div class="table-header-cell col-2">订单号</div>
+                    <div class="table-header-cell col-3">货物</div>
+                    <div class="table-header-cell col-4">状态</div>
+                    <div class="table-header-cell col-5">装卸时间</div>
+                </div>
+                <div class="table-body-container" id="tableBodyContainer">
+                    <div class="table-body" id="tableBody">
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -802,5 +802,149 @@
             </div>
         </div>
     </div>
+
+    <script>
+        const vehicleData = [
+            { plate: '川X37306', order: 'ZC27163666181', goods: '钠', status: 'loading', time: '2026-05-15' },
+            { plate: '川W56874', order: 'ZC24817665195', goods: '钙', status: 'unloading', time: '2026-05-15' },
+            { plate: '川V34581', order: 'ZC545436511520', goods: '磷', status: 'loading', time: '2026-05-15' },
+            { plate: '川P83237', order: 'ZC12712017705', goods: '钙', status: 'loading', time: '2026-05-15' },
+            { plate: '川A52951', order: 'ZC71920591835', goods: '钠', status: 'loading', time: '2026-05-15' },
+            { plate: '川K74737', order: 'ZC56676130196', goods: '硫', status: 'unloading', time: '2026-05-15' },
+            { plate: '川G65872', order: 'ZC65773961402', goods: '钠', status: 'unloading', time: '2026-05-15' },
+            { plate: '川L84314', order: 'ZC05735262989', goods: '磷', status: 'unloading', time: '2026-05-15' },
+            { plate: '川V96352', order: 'ZC88745616768', goods: '磷', status: 'loading', time: '2026-05-15' },
+            { plate: '川Y22477', order: 'ZC65355036818', goods: '钠', status: 'unloading', time: '2026-05-15' },
+            { plate: '川Z01571', order: 'ZC38304179930', goods: '硫', status: 'loading', time: '2026-05-15' },
+            { plate: '川Q94855', order: 'ZC23353748279', goods: '硫', status: 'unloading', time: '2026-05-15' },
+            { plate: '川L85330', order: 'ZC59119283758', goods: '硫', status: 'loading', time: '2026-05-15' },
+            { plate: '川E58857', order: 'ZC48098312825', goods: '磷', status: 'loading', time: '2026-05-15' },
+            { plate: '川X89841', order: 'ZC93294199826', goods: '钙', status: 'loading', time: '2026-05-15' },
+            { plate: '川O7827', order: 'ZC72259816632', goods: '磷', status: 'unloading', time: '2026-05-15' },
+            { plate: '川T97437', order: 'ZC35812656328', goods: '磷', status: 'loading', time: '2026-05-15' },
+            { plate: '川H51196', order: 'ZC65383866526', goods: '硫', status: 'unloading', time: '2026-05-15' },
+            { plate: '川Y64688', order: 'ZC04208149236', goods: '磷', status: 'unloading', time: '2026-05-15' },
+            { plate: '川S34478', order: 'ZC51817559479', goods: '钙', status: 'unloading', time: '2026-05-15' },
+            { plate: '川T13827', order: 'ZC74817481218', goods: '钠', status: 'unloading', time: '2026-05-15' }
+        ];
+
+        let displayData = [];
+        let scrollPosition = 0;
+        let rowHeight = 0;
+        let isPaused = false;
+        let animationId = null;
+        let currentIndex = 0;
+        const scrollDuration = 2000;
+        let scrollStartTime = 0;
+        let startPosition = 0;
+
+        function createRow(data) {
+            const statusClass = data.status === 'loading' ? 'status-loading' : 'status-unloading';
+            const statusText = data.status === 'loading' ? '卸货' : '装货';
+            
+            return `
+                <div class="table-body-row">
+                    <div class="table-body-cell col-1">${data.plate}</div>
+                    <div class="table-body-cell col-2">${data.order}</div>
+                    <div class="table-body-cell col-3">${data.goods}</div>
+                    <div class="table-body-cell col-4"><span class="status ${statusClass}">${statusText}</span></div>
+                    <div class="table-body-cell col-5">${data.time}</div>
+                </div>
+            `;
+        }
+
+        function populateTable() {
+            const tableBody = document.getElementById('tableBody');
+            const container = document.getElementById('tableBodyContainer');
+            
+            const containerHeight = container.offsetHeight;
+            const visibleRows = Math.ceil(containerHeight / rowHeight) + 2;
+            
+            displayData = [];
+            currentIndex = 0;
+            
+            for (let i = 0; i < visibleRows; i++) {
+                const dataIndex = i % vehicleData.length;
+                displayData.push({...vehicleData[dataIndex], originalIndex: dataIndex});
+            }
+            
+            renderTable();
+        }
+
+        function renderTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = displayData.map(row => createRow(row)).join('');
+        }
+
+        function easeOutCubic(t) {
+            return 1 - Math.pow(1 - t, 3);
+        }
+
+        function animateScroll(timestamp) {
+            if (!isPaused) {
+                if (!scrollStartTime) {
+                    scrollStartTime = timestamp;
+                    startPosition = scrollPosition;
+                }
+                
+                const elapsed = timestamp - scrollStartTime;
+                
+                if (elapsed < scrollDuration) {
+                    const progress = easeOutCubic(elapsed / scrollDuration);
+                    scrollPosition = startPosition + (rowHeight - startPosition % rowHeight) * progress;
+                    
+                    if (scrollPosition >= rowHeight) {
+                        scrollPosition = scrollPosition % rowHeight;
+                    }
+                } else {
+                    scrollPosition = 0;
+                    scrollStartTime = timestamp;
+                    startPosition = 0;
+                    
+                    currentIndex = (currentIndex + 1) % vehicleData.length;
+                    displayData.shift();
+                    displayData.push({...vehicleData[currentIndex], originalIndex: currentIndex});
+                    renderTable();
+                }
+                
+                document.getElementById('tableBody').style.transform = `translateY(-${scrollPosition}px)`;
+            }
+            
+            animationId = requestAnimationFrame(animateScroll);
+        }
+
+        function initScroll() {
+            const tableBody = document.getElementById('tableBody');
+            
+            const tempRow = document.createElement('div');
+            tempRow.className = 'table-body-row';
+            tempRow.innerHTML = `
+                <div class="table-body-cell col-1">川X37306</div>
+                <div class="table-body-cell col-2">ZC27163666181</div>
+                <div class="table-body-cell col-3">钠</div>
+                <div class="table-body-cell col-4"><span class="status status-loading">卸货</span></div>
+                <div class="table-body-cell col-5">2026-05-15</div>
+            `;
+            tableBody.appendChild(tempRow);
+            
+            rowHeight = tempRow.offsetHeight;
+            tableBody.removeChild(tempRow);
+            
+            populateTable();
+            animationId = requestAnimationFrame(animateScroll);
+        }
+
+        document.addEventListener('DOMContentLoaded', initScroll);
+
+        const tableContainer = document.getElementById('tableBodyContainer');
+        if (tableContainer) {
+            tableContainer.addEventListener('mouseenter', () => { isPaused = true; });
+            tableContainer.addEventListener('mouseleave', () => { 
+                isPaused = false; 
+                scrollStartTime = 0;
+                startPosition = scrollPosition;
+            });
+        }
+    </script>
 </body>
 </html>
