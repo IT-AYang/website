@@ -23,84 +23,72 @@
         
         .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
         .topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: center; }
-        .search-box { width: 260px; height: 36px; background: #f5f7fa; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; }
+        .search-box { width: 260px; height: 36px; background: #f5f7fa; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 12px; color: #909399; }
         .content { flex: 1; padding: 12px; overflow-y: auto; }
         
-        .card { background: #fff; border-radius: 4px; border: 1px solid #e8e8e8; padding: 16px; }
+        .card { background: #fff; border-radius: 4px; border: 1px solid #e8e8e8; }
         
-        .breadcrumb { font-size: 12px; color: #606266; margin-bottom: 16px; }
+        .breadcrumb { padding: 12px 16px; font-size: 12px; color: #606266; }
         .breadcrumb span { margin: 0 3px; }
         .breadcrumb .current { color: #909399; }
         
-        .assign-container { display: flex; gap: 16px; }
+        .tabs { display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; }
+        .tab { padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .tab.active { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+        .tab.inactive { background: #f5f5f5; color: #909399; border: 1px solid #e8e8e8; }
+        .tab.completed { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
         
-        .company-list { width: 300px; background: #eef1f6; border: 1px solid #dcdfe6; border-radius: 4px; padding: 8px; }
-        .company-item { padding: 10px 12px; background: #fff; border-bottom: 1px solid #e8e8e8; cursor: pointer; transition: all 0.2s; font-size: 12px; }
-        .company-item:last-child { border-bottom: none; }
-        .company-item:hover { background: #e6f7ff; }
-        .company-item.active { background: #e6f7ff; color: #1890ff; }
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #f0f0f0; }
+        .calendar-title { font-size: 16px; font-weight: 600; color: #303133; }
+        .calendar-nav { display: flex; gap: 8px; }
+        .nav-btn { padding: 4px 12px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; font-size: 12px; cursor: pointer; color: #606266; }
+        .nav-btn:hover { color: #1890ff; border-color: #1890ff; }
         
-        .assign-content { flex: 1; display: flex; flex-direction: column; gap: 16px; }
-        .assign-header { display: flex; justify-content: space-between; align-items: center; }
-        .assign-header h4 { font-size: 14px; font-weight: 500; color: #303133; }
-        .assign-buttons { display: flex; gap: 8px; }
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 16px; }
+        .calendar-day-header { padding: 8px; text-align: center; font-size: 12px; color: #909399; font-weight: 600; }
+        .calendar-day { min-height: 100px; padding: 8px; background: #fafafa; border-radius: 4px; cursor: pointer; transition: all 0.2s; position: relative; }
+        .calendar-day:hover { background: #e6f7ff; border: 1px solid #1890ff; }
+        .calendar-day.today { border: 2px solid #1890ff; }
+        .calendar-day.selected { background: #e6f7ff; }
+        .calendar-day.other-month { opacity: 0.4; }
+        .day-number { font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 8px; }
+        .day-info { font-size: 11px; color: #606266; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        .btn { height: 32px; padding: 0 16px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .btn { height: 36px; padding: 0 14px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
         .btn:hover { color: #1890ff; border-color: #1890ff; }
         .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
-        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; color: #fff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
         .btn-danger { color: #f56c6c; border-color: #fbc4c4; background: #fef0f0; }
-        .btn-danger:hover { color: #fff; background: #f56c6c; border-color: #f56c6c; }
+        .btn-danger:hover { color: #fff; background: #f56c6c; }
         .btn-link { border: none; background: none; color: #1890ff; padding: 0 5px; }
-        .btn-link:hover { color: #40a9ff; }
-        
-        .table-container { overflow-x: auto; border: 1px solid #dcdfe6; }
-        table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8e8e8; }
-        th { background: #fafafa; font-weight: 600; color: #303133; }
-        td { color: #606266; }
-        tbody tr:hover { background: #f5f7fa; }
-        .order-no { color: #1890ff; cursor: pointer; }
-        
-        .empty-state { text-align: center; padding: 30px; color: #909399; }
         
         .menu-group .menu-item { justify-content: space-between; }
         .menu-group-content { display: none; }
         .menu-group.open .menu-group-content { display: block; }
         .menu-group.open .menu-arrow { transform: rotate(180deg); }
         
-        .side-panel { position: fixed; right: -600px; top: 0; width: 600px; height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s; display: flex; flex-direction: column; }
+        .side-panel { position: fixed; right: -400px; top: 0; width: 400px; height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s; display: flex; flex-direction: column; }
         .side-panel.open { right: 0; }
         .panel-header { padding: 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
         .panel-header h3 { font-size: 16px; font-weight: 600; color: #303133; }
         .close-panel { background: none; border: none; font-size: 20px; cursor: pointer; color: #909399; padding: 4px; }
         .close-panel:hover { color: #303133; }
         .panel-body { flex: 1; padding: 16px; overflow-y: auto; }
-        .panel-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; background: #f5f5f5; }
+        .panel-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
         
-        .panel-table-container { border: 1px solid #dcdfe6; border-radius: 4px; overflow-x: auto; }
-        .panel-table { width: 100%; border-collapse: collapse; font-size: 12px; }
-        .panel-table th, .panel-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8e8e8; }
-        .panel-table th { background: #fafafa; font-weight: 600; color: #303133; }
-        
-        .panel-pagination { padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #606266; }
-        .pagination-right { display: flex; align-items: center; gap: 8px; }
-        .page-btn { width: 28px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
-        .page-btn:hover { color: #1890ff; border-color: #1890ff; }
-        .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
-        .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
-        .page-select { padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; }
-        .page-jump { display: flex; align-items: center; gap: 6px; }
-        .page-jump input { width: 44px; padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 12px; }
-        
-        .checkbox { width: 14px; height: 14px; cursor: pointer; }
+        .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .form-item { flex: 1; }
+        .form-item label { display: block; margin-bottom: 6px; color: #606266; font-size: 12px; }
+        .form-item label .required { color: #f56c6c; margin-right: 3px; }
+        .form-item select, .form-item input { width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; outline: none; }
+        .form-item select:focus, .form-item input:focus { border-color: #1890ff; }
         
         .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: none; z-index: 1000; }
         .panel-overlay.active { display: block; }
         
-        .loading { text-align: center; padding: 40px; color: #909399; }
-        .loading-spinner { border: 2px solid #f3f3f3; border-top: 2px solid #1890ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .shift-selector { display: flex; gap: 8px; flex-wrap: wrap; }
+        .shift-option { padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; cursor: pointer; }
+        .shift-option.selected { background: #1890ff; color: #fff; border-color: #1890ff; }
     </style>
 </head>
 <body>
@@ -125,26 +113,11 @@
                         <span class="menu-arrow">∨</span>
                     </div>
                     <div class="menu-group-content menu-sub">
-                        <div class="menu-item" onclick="navigateTo('7_1.html')">
-                            <span>📄</span>
-                            <span>公司管理</span>
-                        </div>
-                        <div class="menu-item" onclick="navigateTo('7_2.html')">
-                            <span>🚗</span>
-                            <span>车辆管理</span>
-                        </div>
-                        <div class="menu-item" onclick="navigateTo('7_3.html')">
-                            <span>👥</span>
-                            <span>装卸队伍</span>
-                        </div>
-                        <div class="menu-item" onclick="navigateTo('7_4.html')">
-                            <span>👤</span>
-                            <span>装卸人员</span>
-                        </div>
-                        <div class="menu-item" onclick="navigateTo('7_5.html')">
-                            <span>📅</span>
-                            <span>排班计划</span>
-                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_1.html')"><span>📄</span><span>公司管理</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_2.html')"><span>🚗</span><span>车辆管理</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_3.html')"><span>👥</span><span>装卸队伍</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_4.html')"><span>👤</span><span>装卸人员</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_5.html')"><span>📅</span><span>排班计划</span></div>
                     </div>
                 </div>
                 <div class="menu-group open">
@@ -154,14 +127,8 @@
                         <span class="menu-arrow">∨</span>
                     </div>
                     <div class="menu-group-content menu-sub">
-                        <div class="menu-item" onclick="navigateTo('8_1.html')">
-                            <span>📥</span>
-                            <span>入库计划</span>
-                        </div>
-                        <div class="menu-item" onclick="navigateTo('8_2.html')">
-                            <span>📤</span>
-                            <span>出库计划</span>
-                        </div>
+                        <div class="menu-item" onclick="navigateTo('8_1.html')"><span>📥</span><span>入库计划</span></div>
+                        <div class="menu-item" onclick="navigateTo('8_2.html')"><span>📤</span><span>出库计划</span></div>
                     </div>
                 </div>
                 <div class="menu-group open">
@@ -171,18 +138,9 @@
                         <span class="menu-arrow">∨</span>
                     </div>
                     <div class="menu-group-content menu-sub">
-                        <div class="menu-item" onclick="navigateTo('9_1.html')">
-                            <span>🏢</span>
-                            <span>物流公司指派</span>
-                        </div>
-                        <div class="menu-item" onclick="navigateTo('9_2.html')">
-                            <span>🚗</span>
-                            <span>车辆指派</span>
-                        </div>
-                        <div class="menu-item active">
-                            <span>👥</span>
-                            <span>装卸队指派</span>
-                        </div>
+                        <div class="menu-item" onclick="navigateTo('9_1.html')"><span>🏢</span><span>物流公司指派</span></div>
+                        <div class="menu-item" onclick="navigateTo('9_2.html')"><span>🚗</span><span>车辆指派</span></div>
+                        <div class="menu-item active"><span>👥</span><span>装卸队指派</span></div>
                     </div>
                 </div>
                 <div class="menu-group open">
@@ -192,22 +150,10 @@
                         <span class="menu-arrow">∨</span>
                     </div>
                     <div class="menu-group-content menu-sub">
-                        <div class="menu-item">
-                            <span>🚗</span>
-                            <span>车辆预约</span>
-                        </div>
-                        <div class="menu-item">
-                            <span>📥</span>
-                            <span>入库预约</span>
-                        </div>
-                        <div class="menu-item">
-                            <span>📤</span>
-                            <span>出库预约</span>
-                        </div>
-                        <div class="menu-item">
-                            <span>📋</span>
-                            <span>预约管理</span>
-                        </div>
+                        <div class="menu-item"><span>🚗</span><span>车辆预约</span></div>
+                        <div class="menu-item"><span>📥</span><span>入库预约</span></div>
+                        <div class="menu-item"><span>📤</span><span>出库预约</span></div>
+                        <div class="menu-item"><span>📋</span><span>预约管理</span></div>
                     </div>
                 </div>
             </nav>
@@ -215,418 +161,263 @@
 
         <main class="main-content">
             <header class="topbar">
-                <div class="search-box">
-                    <span style="color: #909399; font-size: 13px;">菜单搜索</span>
-                </div>
+                <div class="search-box">菜单搜索</div>
             </header>
 
             <div class="content">
                 <div class="card">
                     <div class="breadcrumb">
-                        分派管理
-                        <span>/</span>
-                        <span class="current">装卸队指派</span>
+                        分派管理 <span>/</span> <span class="current">装卸队指派</span>
                     </div>
 
-                    <div class="assign-container">
-                        <div class="company-list" id="companyList">
-                            <!-- 装卸队列表会被JavaScript填充 -->
-                        </div>
+                    <div class="tabs">
+                        <div class="tab completed" onclick="filterStatus('assigned')">已指派</div>
+                        <div class="tab inactive" onclick="filterStatus('unassigned')">未指派</div>
+                        <div class="tab active" onclick="filterStatus('waiting')">待指派</div>
+                    </div>
 
-                        <div class="assign-content">
-                            <div class="assign-header">
-                                <h4 id="selectedCompanyName">当前选择：</h4>
-                                <div class="assign-buttons">
-                                    <button class="btn btn-primary" onclick="openInboundPanel()">
-                                        <span>📥</span>
-                                        指派出库单
-                                    </button>
-                                    <button class="btn btn-primary" onclick="openOutboundPanel()">
-                                        <span>📤</span>
-                                        指派入库单
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>订单</th>
-                                            <th>类型</th>
-                                            <th>操作</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="assignedOrders">
-                                        <!-- 已指派订单列表会被JavaScript填充 -->
-                                    </tbody>
-                                </table>
-                            </div>
+                    <div class="calendar-header">
+                        <div class="calendar-title" id="calendarTitle">2026年5月</div>
+                        <div class="calendar-nav">
+                            <button class="nav-btn" onclick="prevMonth()">上个月</button>
+                            <button class="nav-btn" onclick="goToday()">今天</button>
+                            <button class="nav-btn" onclick="nextMonth()">下个月</button>
                         </div>
                     </div>
+
+                    <div class="calendar-grid">
+                        <div class="calendar-day-header">一</div>
+                        <div class="calendar-day-header">二</div>
+                        <div class="calendar-day-header">三</div>
+                        <div class="calendar-day-header">四</div>
+                        <div class="calendar-day-header">五</div>
+                        <div class="calendar-day-header">六</div>
+                        <div class="calendar-day-header">日</div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendarGrid"></div>
                 </div>
             </div>
         </main>
     </div>
 
-    <!-- 指派入库单/出库单的侧边面板 -->
     <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
     <div class="side-panel" id="sidePanel">
         <div class="panel-header">
-            <h3 id="panelTitle">入库计划单选择-添加</h3>
+            <h3 id="panelTitle">指派装卸队</h3>
             <button class="close-panel" onclick="closePanel()">×</button>
         </div>
         <div class="panel-body">
-            <div class="panel-table-container">
-                <table class="panel-table" id="orderSelectTable">
-                    <!-- 表格内容会被JavaScript填充 -->
-                </table>
+            <div class="form-item">
+                <label>装卸队</label>
+                <select id="teamSelect">
+                    <option value="">请选择装卸队</option>
+                    <option value="1">装卸一队</option>
+                    <option value="2">装卸二队</option>
+                    <option value="3">装卸三队</option>
+                    <option value="4">装卸四队</option>
+                    <option value="5">装卸五队</option>
+                </select>
             </div>
-            <div class="panel-pagination">
-                <div class="pagination-left">
-                    共 <span id="panelTotalCount">0</span> 条
-                    <select class="page-select" id="panelPageSize" onchange="changePanelPageSize()">
-                        <option value="10">10条/页</option>
-                        <option value="20" selected>20条/页</option>
-                        <option value="50">50条/页</option>
-                    </select>
+            <div class="form-item">
+                <label>工作时间段</label>
+                <div class="shift-selector" id="shiftSelector">
+                    <div class="shift-option" onclick="toggleShift('morning')">上午 08:00-12:00</div>
+                    <div class="shift-option" onclick="toggleShift('afternoon')">下午 13:00-17:00</div>
+                    <div class="shift-option" onclick="toggleShift('evening')">晚班 18:00-22:00</div>
                 </div>
-                <div class="pagination-right">
-                    <button class="page-btn" id="panelPrevBtn" onclick="prevPanelPage()" disabled>◀</button>
-                    <button class="page-btn active" id="panelPage1">1</button>
-                    <button class="page-btn" id="panelNextBtn" onclick="nextPanelPage()">▶</button>
-                    <div class="page-jump">
-                        前往
-                        <input type="number" id="panelJumpPage" min="1" value="1">
-                        页
-                    </div>
-                </div>
+            </div>
+            <div class="form-item">
+                <label>备注</label>
+                <input type="text" id="remark" placeholder="请输入备注信息" style="width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; outline: none;">
             </div>
         </div>
         <div class="panel-footer">
-            <button class="btn btn-primary" onclick="confirmAssign()">
-                <span>✓</span>
-                确定
-            </button>
-            <button class="btn" onclick="closePanel()">
-                <span>⊗</span>
-                取消
-            </button>
+            <button class="btn btn-primary" onclick="saveAssignment()">确定</button>
+            <button class="btn" onclick="closePanel()">取消</button>
         </div>
     </div>
 
     <script>
-        // 装卸队数据
         const teams = [
-            { id: 1, name: '装卸一队', leader: '张三', phone: '13800000001' },
-            { id: 2, name: '装卸二队', leader: '李四', phone: '13800000002' },
-            { id: 3, name: '装卸三队', leader: '王五', phone: '13800000003' },
-            { id: 4, name: '装卸四队', leader: '赵六', phone: '13800000004' },
-            { id: 5, name: '装卸五队', leader: '钱七', phone: '13800000005' }
+            { id: 1, name: '装卸一队' },
+            { id: 2, name: '装卸二队' },
+            { id: 3, name: '装卸三队' },
+            { id: 4, name: '装卸四队' },
+            { id: 5, name: '装卸五队' }
         ];
 
-        // 已指派的订单数据
-        let assignedOrders = {};
-
-        // 当前选中的装卸队
-        let selectedTeamId = 1;
-
-        // 当前面板类型：inbound/outbound
-        let currentPanelType = 'inbound';
-
-        // 入库计划数据（从8_1.html复制）
-        const inboundOrders = [
-            { id: 1, orderNo: 'IMP20250619-0001', customer: '蓝海科技有限公司', customerOrderNo: 'OD123456', supplier: '速达物流有限公司', platform: '1号月台', storage: '冻库01', cost: 500, date: '2025-06-19' },
-            { id: 2, orderNo: 'IMP20250619-0002', customer: '绿野仙踪农业发展有限公司', customerOrderNo: 'OD654321', supplier: '顺风快运有限公司', platform: '1号月台', storage: '冻库01', cost: 800, date: '2025-06-18' },
-            { id: 3, orderNo: 'IMP20250619-0004', customer: '银月贸易有限公司', customerOrderNo: 'OD246810', supplier: '全球通物流有限公司', platform: '3号月台', storage: '8号库', cost: 1200, date: '2024-11-14' },
-            { id: 4, orderNo: 'IMP20250619-0005', customer: '红星教育咨询有限公司', customerOrderNo: 'OD135792', supplier: '捷运物流有限公司', platform: '2号月台', storage: '7号库', cost: 1000, date: '2025-03-12' },
-            { id: 5, orderNo: 'IMP20250619-0003', customer: '金石建筑有限公司', customerOrderNo: 'OD987654', supplier: '通达货运有限公司', platform: '2号月台', storage: '7号库', cost: 900, date: '2024-04-18' }
-        ];
-
-        // 出库计划数据（从8_2.html复制）
-        const outboundOrders = [
-            { id: 1, orderNo: 'OMP20221202-0001', customer: '成都达成', receiverName: '李四', receiverPhone: '18421868', receiverAddress: '成都', platform: '3号月台', cost: 200, deliveryDate: '2022-12-10' },
-            { id: 2, orderNo: 'OMP20221202-0002', customer: '成都胡莱集团', receiverName: '黄晓明', receiverPhone: '1870653256', receiverAddress: '成都', platform: '1号月台', cost: 2000, deliveryDate: '2022-12-10' }
-        ];
-
-        // 面板分页相关
-        let panelCurrentPage = 1;
-        let panelPageSize = 20;
-        let selectedOrderIds = new Set();
+        let currentYear = 2026;
+        let currentMonth = 4;
+        let selectedDate = null;
+        let selectedShifts = new Set();
+        let assignments = {};
 
         function init() {
-            renderTeamList();
-            selectTeam(1);
+            const today = new Date();
+            currentYear = 2026;
+            currentMonth = 4;
+            renderCalendar();
         }
 
-        function renderTeamList() {
-            const list = document.getElementById('companyList');
-            list.innerHTML = teams.map(team => `
-                <div class="company-item ${team.id === selectedTeamId ? 'active' : ''}" onclick="selectTeam(${team.id})">
-                    ${team.name}/${team.leader}
-                </div>
-            `).join('');
-        }
-
-        function selectTeam(teamId) {
-            selectedTeamId = teamId;
-            const team = teams.find(t => t.id === teamId);
-            document.getElementById('selectedCompanyName').textContent = '当前选择：' + (team ? team.name : '');
-            renderTeamList();
-            renderAssignedOrders();
-        }
-
-        function renderAssignedOrders() {
-            const tbody = document.getElementById('assignedOrders');
-            const orders = assignedOrders[selectedTeamId] || [];
-
-            if (orders.length === 0) {
-                tbody.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="empty-state">暂无数据</td>
-                    </tr>
-                `;
-                return;
+        function renderCalendar() {
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const startDay = firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
+            
+            const prevLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            const currentDays = lastDay.getDate();
+            
+            document.getElementById('calendarTitle').textContent = `${currentYear}年${currentMonth + 1}月`;
+            
+            let html = '';
+            
+            for (let i = startDay - 1; i >= 0; i--) {
+                const day = prevLastDay - i;
+                html += `<div class="calendar-day other-month" onclick="selectDate(${currentYear}, ${currentMonth - 1}, ${day})">
+                    <div class="day-number">${day}</div>
+                    <div class="day-info"></div>
+                </div>`;
             }
-
-            tbody.innerHTML = orders.map(order => `
-                <tr>
-                    <td><span class="order-no">${order.orderNo}</span></td>
-                    <td>${order.type === 'inbound' ? '入库单' : '出库单'}</td>
-                    <td>
-                        <button class="btn btn-link" style="color: #f56c6c;" onclick="removeAssign(${order.id}, '${order.type}')">
-                            🗑️ 取消
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
+            
+            for (let day = 1; day <= currentDays; day++) {
+                const dateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const hasAssignment = assignments[dateStr];
+                const isToday = isTodayDate(currentYear, currentMonth, day);
+                const isSelected = selectedDate && selectedDate.dateStr === dateStr;
+                
+                html += `<div class="calendar-day ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" onclick="selectDate(${currentYear}, ${currentMonth}, ${day})">
+                    <div class="day-number">${day}</div>
+                    <div class="day-info">${hasAssignment ? '已指派' : ''}</div>
+                </div>`;
+            }
+            
+            const remainingCells = 42 - (startDay + currentDays);
+            for (let day = 1; day <= remainingCells; day++) {
+                html += `<div class="calendar-day other-month" onclick="selectDate(${currentYear}, ${currentMonth + 1}, ${day})">
+                    <div class="day-number">${day}</div>
+                    <div class="day-info"></div>
+                </div>`;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
         }
 
-        function openInboundPanel() {
-            currentPanelType = 'inbound';
-            document.getElementById('panelTitle').textContent = '入库计划单选择-添加';
-            renderPanelOrders();
+        function isTodayDate(year, month, day) {
+            const today = new Date();
+            return today.getFullYear() === year && today.getMonth() === month && today.getDate() === day;
+        }
+
+        function selectDate(year, month, day) {
+            selectedDate = {
+                year,
+                month,
+                day,
+                dateStr: `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`
+            };
+            
+            document.getElementById('panelTitle').textContent = `${selectedDate.dateStr} 指派装卸队`;
+            document.getElementById('teamSelect').value = '';
+            selectedShifts.clear();
+            document.querySelectorAll('.shift-option').forEach(el => el.classList.remove('selected'));
+            document.getElementById('remark').value = '';
+            
+            const existing = assignments[selectedDate.dateStr];
+            if (existing) {
+                document.getElementById('teamSelect').value = existing.teamId;
+                existing.shifts.forEach(shift => toggleShift(shift, true));
+                document.getElementById('remark').value = existing.remark || '';
+            }
+            
             document.getElementById('panelOverlay').classList.add('active');
             document.getElementById('sidePanel').classList.add('open');
         }
 
-        function openOutboundPanel() {
-            currentPanelType = 'outbound';
-            document.getElementById('panelTitle').textContent = '出库计划单选择-添加';
-            renderPanelOrders();
-            document.getElementById('panelOverlay').classList.add('active');
-            document.getElementById('sidePanel').classList.add('open');
+        function toggleShift(shift, skipUpdate = false) {
+            const el = Array.from(document.querySelectorAll('.shift-option')).find(e => e.textContent.includes(shift === 'morning' ? '上午' : shift === 'afternoon' ? '下午' : '晚班'));
+            if (selectedShifts.has(shift)) {
+                selectedShifts.delete(shift);
+                el.classList.remove('selected');
+            } else {
+                selectedShifts.add(shift);
+                el.classList.add('selected');
+            }
         }
 
-        function renderPanelOrders() {
-            const table = document.getElementById('orderSelectTable');
-            let orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
-
-            // 排除已指派的订单
-            const assigned = assignedOrders[selectedTeamId] || [];
-            const assignedIds = new Set(assigned.map(a => a.id));
-            orders = orders.filter(o => !assignedIds.has(o.id));
-
-            if (orders.length === 0) {
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>${currentPanelType === 'inbound' ? '入库计划单号' : '出库计划单号'}</th>
-                            <th>${currentPanelType === 'inbound' ? '客户编码' : '客户'}</th>
-                            <th>${currentPanelType === 'inbound' ? '客户订单号' : '收货人'}</th>
-                            <th>${currentPanelType === 'inbound' ? '供应商编码' : '收货人电话'}</th>
-                            <th>${currentPanelType === 'inbound' ? '供应商名称' : '收货人地址'}</th>
-                            <th>月台</th>
-                            <th>${currentPanelType === 'inbound' ? '仓储' : '费用(元)'}</th>
-                            <th>费用(元)</th>
-                            <th>${currentPanelType === 'inbound' ? '预计到货时间' : '计划交货时间'}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td colspan="10" class="empty-state">暂无数据</td>
-                        </tr>
-                    </tbody>
-                `;
-                updatePanelPagination(0);
+        function saveAssignment() {
+            const teamId = document.getElementById('teamSelect').value;
+            const remark = document.getElementById('remark').value;
+            
+            if (!teamId) {
+                alert('请选择装卸队');
                 return;
             }
-
-            // 分页
-            const start = (panelCurrentPage - 1) * panelPageSize;
-            const end = start + panelPageSize;
-            const pageData = orders.slice(start, end);
-
-            if (currentPanelType === 'inbound') {
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" class="checkbox" id="selectAllPanel" onchange="toggleSelectAllPanel()"></th>
-                            <th>入库计划单号</th>
-                            <th>客户编码</th>
-                            <th>客户订单号</th>
-                            <th>供应商编码</th>
-                            <th>供应商名称</th>
-                            <th>月台</th>
-                            <th>仓储</th>
-                            <th>费用(元)</th>
-                            <th>预计到货时间</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${pageData.map(order => `
-                            <tr>
-                                <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedOrderIds.has(order.id) ? 'checked' : ''} onchange="toggleSelectPanel(${order.id})"></td>
-                                <td><span class="order-no">${order.orderNo}</span></td>
-                                <td>${order.customer}</td>
-                                <td>${order.customerOrderNo}</td>
-                                <td></td>
-                                <td>${order.supplier}</td>
-                                <td>${order.platform}</td>
-                                <td>${order.storage}</td>
-                                <td>${order.cost}</td>
-                                <td>${order.date}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-            } else {
-                table.innerHTML = `
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" class="checkbox" id="selectAllPanel" onchange="toggleSelectAllPanel()"></th>
-                            <th>出库计划单号</th>
-                            <th>客户</th>
-                            <th>收货人</th>
-                            <th>收货人电话</th>
-                            <th>收货人地址</th>
-                            <th>发货月台</th>
-                            <th>费用(元)</th>
-                            <th>计划交货时间</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${pageData.map(order => `
-                            <tr>
-                                <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedOrderIds.has(order.id) ? 'checked' : ''} onchange="toggleSelectPanel(${order.id})"></td>
-                                <td><span class="order-no">${order.orderNo}</span></td>
-                                <td>${order.customer}</td>
-                                <td>${order.receiverName}</td>
-                                <td>${order.receiverPhone}</td>
-                                <td>${order.receiverAddress}</td>
-                                <td>${order.platform}</td>
-                                <td>${order.cost}</td>
-                                <td>${order.deliveryDate}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                `;
-            }
-
-            updatePanelPagination(orders.length);
-        }
-
-        function updatePanelPagination(total) {
-            document.getElementById('panelTotalCount').textContent = total;
-            const totalPages = Math.ceil(total / panelPageSize) || 1;
-            document.getElementById('panelPrevBtn').disabled = panelCurrentPage <= 1;
-            document.getElementById('panelNextBtn').disabled = panelCurrentPage >= totalPages;
-        }
-
-        function toggleSelectPanel(orderId) {
-            if (selectedOrderIds.has(orderId)) {
-                selectedOrderIds.delete(orderId);
-            } else {
-                selectedOrderIds.add(orderId);
-            }
-        }
-
-        function toggleSelectAllPanel() {
-            const selectAll = document.getElementById('selectAllPanel').checked;
-            const orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
-            const start = (panelCurrentPage - 1) * panelPageSize;
-            const end = start + panelPageSize;
-            const pageData = orders.slice(start, end);
-
-            if (selectAll) {
-                pageData.forEach(o => selectedOrderIds.add(o.id));
-            } else {
-                pageData.forEach(o => selectedOrderIds.delete(o.id));
-            }
-            renderPanelOrders();
-        }
-
-        function confirmAssign() {
-            if (selectedOrderIds.size === 0) {
-                alert('请先选择要指派的订单');
+            
+            if (selectedShifts.size === 0) {
+                alert('请选择工作时间段');
                 return;
             }
-
-            const orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
-            const selectedOrders = orders.filter(o => selectedOrderIds.has(o.id));
-
-            if (!assignedOrders[selectedTeamId]) {
-                assignedOrders[selectedTeamId] = [];
-            }
-
-            selectedOrders.forEach(order => {
-                assignedOrders[selectedTeamId].push({
-                    id: order.id,
-                    orderNo: order.orderNo,
-                    type: currentPanelType
-                });
-            });
-
-            selectedOrderIds.clear();
+            
+            assignments[selectedDate.dateStr] = {
+                teamId,
+                teamName: teams.find(t => t.id == teamId).name,
+                shifts: Array.from(selectedShifts),
+                remark
+            };
+            
             closePanel();
-            renderAssignedOrders();
-        }
-
-        function removeAssign(orderId, type) {
-            if (!confirm('确定要取消该指派吗？')) {
-                return;
-            }
-
-            const orders = assignedOrders[selectedTeamId];
-            if (orders) {
-                assignedOrders[selectedTeamId] = orders.filter(o => !(o.id === orderId && o.type === type));
-                renderAssignedOrders();
-            }
+            renderCalendar();
         }
 
         function closePanel() {
             document.getElementById('panelOverlay').classList.remove('active');
             document.getElementById('sidePanel').classList.remove('open');
-            selectedOrderIds.clear();
-            panelCurrentPage = 1;
         }
 
-        function prevPanelPage() {
-            if (panelCurrentPage > 1) {
-                panelCurrentPage--;
-                renderPanelOrders();
+        function prevMonth() {
+            if (currentMonth === 0) {
+                currentYear--;
+                currentMonth = 11;
+            } else {
+                currentMonth--;
             }
+            renderCalendar();
         }
 
-        function nextPanelPage() {
-            const orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
-            const totalPages = Math.ceil(orders.length / panelPageSize);
-            if (panelCurrentPage < totalPages) {
-                panelCurrentPage++;
-                renderPanelOrders();
+        function nextMonth() {
+            if (currentMonth === 11) {
+                currentYear++;
+                currentMonth = 0;
+            } else {
+                currentMonth++;
             }
+            renderCalendar();
         }
 
-        function changePanelPageSize() {
-            panelPageSize = parseInt(document.getElementById('panelPageSize').value);
-            panelCurrentPage = 1;
-            renderPanelOrders();
+        function goToday() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            renderCalendar();
+        }
+
+        function filterStatus(status) {
+            document.querySelectorAll('.tab').forEach(el => {
+                el.classList.remove('active', 'inactive', 'completed');
+            });
+            
+            const statusMap = {
+                'assigned': ['completed', '已完成', ''],
+                'unassigned': ['inactive', '', '未完成'],
+                'waiting': ['active', '进行中', '待处理']
+            };
+            
+            const el = document.querySelector(`.tab.${status}`);
+            el.classList.add(statusMap[status][0]);
         }
 
         function toggleMenu(el) {
-            const group = el.parentElement;
-            group.classList.toggle('open');
+            el.parentElement.classList.toggle('open');
         }
 
         function navigateTo(url) {
