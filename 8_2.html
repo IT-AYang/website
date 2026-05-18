@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>出库计划</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 200px; background: #fff; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 14px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; }
+        .logo { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+        .sidebar-title { font-size: 14px; font-weight: 600; color: #262626; }
+        .menu { flex: 1; padding: 4px 0; overflow-y: auto; }
+        .menu-item { padding: 10px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: #595959; transition: all 0.2s; font-size: 13px; }
+        .menu-item:hover { background: #e6f7ff; color: #1890ff; }
+        .menu-item.active { background: #e6f7ff; color: #1890ff; border-right: 2px solid #1890ff; }
+        .menu-sub { background: #fafafa; }
+        .menu-sub .menu-item { padding-left: 40px; font-size: 12px; }
+        .menu-arrow { margin-left: auto; font-size: 10px; }
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: center; }
+        .search-box { width: 260px; height: 36px; background: #f5f7fa; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; }
+        .content { flex: 1; padding: 12px; overflow-y: auto; }
+        
+        .card { background: #fff; border-radius: 4px; border: 1px solid #e8e8e8; }
+        
+        .breadcrumb { padding: 12px 16px; font-size: 12px; color: #606266; }
+        .breadcrumb span { margin: 0 3px; }
+        .breadcrumb .current { color: #909399; }
+        
+        .search-bar { padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid #f0f0f0; }
+        .search-item { display: flex; align-items: center; gap: 0; }
+        .search-item label { font-size: 12px; color: #606266; white-space: nowrap; background: #f5f7fa; padding: 7px 10px; border: 1px solid #e4e7ed; border-right: none; border-radius: 4px 0 0 4px; }
+        .search-item input, .search-item select { height: 36px; padding: 6px 10px; border: 1px solid #e4e7ed; border-radius: 0 4px 4px 0; font-size: 12px; outline: none; min-width: 200px; }
+        .search-item input:focus, .search-item select:focus { border-color: #1890ff; }
+        .search-btns { display: flex; gap: 8px; margin-left: auto; }
+        
+        .btn { height: 36px; padding: 0 14px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .btn:hover { color: #1890ff; border-color: #1890ff; }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; color: #fff; }
+        .btn-danger { color: #f56c6c; border-color: #fbc4c4; background: #fef0f0; }
+        .btn-danger:hover { color: #fff; background: #f56c6c; border-color: #f56c6c; }
+        .btn-link { border: none; background: none; color: #1890ff; padding: 0 5px; }
+        .btn-link:hover { color: #40a9ff; }
+        
+        .action-bar { padding: 10px 16px; display: flex; gap: 10px; border-bottom: 1px solid #e8e8e8; }
+        
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        th { background: #fafafa; font-weight: 600; color: #303133; }
+        td { color: #606266; }
+        tbody tr:hover { background: #f5f7fa; }
+        .order-no { color: #1890ff; cursor: pointer; }
+        .table-actions { display: flex; gap: 3px; }
+        
+        .pagination { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #606266; }
+        .pagination-right { display: flex; align-items: center; gap: 10px; }
+        .page-select { padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; }
+        .page-btn { width: 28px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .page-btn:hover { color: #1890ff; border-color: #1890ff; }
+        .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .page-jump { display: flex; align-items: center; gap: 6px; }
+        .page-jump input { width: 44px; padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 12px; }
+        
+        .checkbox { width: 14px; height: 14px; cursor: pointer; }
+        
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.active { display: flex; }
+        .modal { background: #fff; border-radius: 4px; width: 520px; max-width: 90%; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+        .modal-header { padding: 12px 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h3 { color: #303133; font-size: 14px; font-weight: 600; }
+        .close-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: #909399; }
+        .close-btn:hover { color: #303133; }
+        .modal-body { padding: 16px; }
+        .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .form-item { flex: 1; }
+        .form-item.full { flex: none; width: 100%; }
+        .form-item label { display: block; margin-bottom: 6px; color: #606266; font-size: 12px; }
+        .form-item label .required { color: #f56c6c; margin-right: 3px; }
+        .form-item input, .form-item select, .form-item textarea { width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; outline: none; }
+        .form-item textarea { height: 60px; resize: vertical; }
+        .form-item input:focus, .form-item select:focus, .form-item textarea:focus { border-color: #1890ff; }
+        .modal-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .menu-group .menu-item { justify-content: space-between; }
+        .menu-group-content { display: none; }
+        .menu-group.open .menu-group-content { display: block; }
+        .menu-group.open .menu-arrow { transform: rotate(180deg); }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🚚</div>
+                <span class="sidebar-title">厂内物流调度系统</span>
+            </div>
+            <nav class="menu">
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>工作台</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📓</span>
+                        <span>基础管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('7_1.html')">
+                            <span>📄</span>
+                            <span>公司管理</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_2.html')">
+                            <span>🚗</span>
+                            <span>车辆管理</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_3.html')">
+                            <span>👥</span>
+                            <span>装卸队伍</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_4.html')">
+                            <span>👤</span>
+                            <span>装卸人员</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_5.html')">
+                            <span>📅</span>
+                            <span>排班计划</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>计划单管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('8_1.html')">
+                            <span>📥</span>
+                            <span>入库计划</span>
+                        </div>
+                        <div class="menu-item active">
+                            <span>📤</span>
+                            <span>出库计划</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>分派管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item">
+                            <span>🏢</span>
+                            <span>物流公司指派</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>🚗</span>
+                            <span>车辆指派</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>👥</span>
+                            <span>装卸队指派</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📅</span>
+                        <span>预约管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item">
+                            <span>🚗</span>
+                            <span>车辆预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📥</span>
+                            <span>入库预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📤</span>
+                            <span>出库预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📋</span>
+                            <span>预约管理</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-box">
+                    <span style="color: #909399; font-size: 13px;">菜单搜索</span>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="card">
+                    <div class="breadcrumb">
+                        计划单管理
+                        <span>/</span>
+                        <span class="current">出库计划</span>
+                    </div>
+
+                    <div class="search-bar">
+                        <div class="search-item">
+                            <label>出库计划单号</label>
+                            <input type="text" id="searchOrderNo" placeholder="请输入出库计划单号">
+                        </div>
+                        <div class="search-item">
+                            <label>单据状态</label>
+                            <select id="searchStatus">
+                                <option value="">请选择单据状态</option>
+                                <option value="进行中">进行中</option>
+                                <option value="已完成">已完成</option>
+                                <option value="已关闭">已关闭</option>
+                            </select>
+                        </div>
+                        <div class="search-btns">
+                            <button class="btn btn-primary" onclick="searchOrders()">
+                                <span>🔍</span>
+                                查询
+                            </button>
+                            <button class="btn" onclick="resetSearch()">
+                                <span>🔄</span>
+                                重置
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="action-bar">
+                        <button class="btn btn-primary" onclick="openAddModal()">
+                            <span>✏️</span>
+                            录入
+                        </button>
+                        <button class="btn btn-danger" onclick="batchDelete()">
+                            <span>🗑️</span>
+                            批量删除
+                        </button>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="orderTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" class="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                    <th>出库计划单号</th>
+                                    <th>客户</th>
+                                    <th>收货人</th>
+                                    <th>收货人电话</th>
+                                    <th>收货人地址</th>
+                                    <th>发货月台</th>
+                                    <th>费用(元)</th>
+                                    <th>计划交货时间</th>
+                                    <th>单据状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination">
+                        <div class="pagination-left">
+                            共 <span id="totalCount">0</span> 条
+                            <select class="page-select" id="pageSize" onchange="changePageSize()">
+                                <option value="10">10条/页</option>
+                                <option value="20" selected>20条/页</option>
+                                <option value="50">50条/页</option>
+                            </select>
+                        </div>
+                        <div class="pagination-right">
+                            <button class="page-btn" id="prevBtn" onclick="prevPage()" disabled>◀</button>
+                            <button class="page-btn active" id="page1">1</button>
+                            <button class="page-btn" id="nextBtn" onclick="nextPage()">▶</button>
+                            <div class="page-jump">
+                                前往
+                                <input type="number" id="jumpPage" min="1" value="1">
+                                页
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3 id="modalTitle">录入出库计划</h3>
+                <button class="close-btn" onclick="closeModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="orderForm">
+                    <input type="hidden" id="orderId">
+                    <div class="form-row">
+                        <div class="form-item">
+                            <label><span class="required">*</span>出库计划单号</label>
+                            <input type="text" id="orderNo" placeholder="请输入出库计划单号">
+                        </div>
+                        <div class="form-item">
+                            <label><span class="required">*</span>客户</label>
+                            <select id="orderCustomer">
+                                <option value="">请选择客户</option>
+                                <option value="成都达成">成都达成</option>
+                                <option value="成都胡莱集团">成都胡莱集团</option>
+                                <option value="蓝海科技有限公司">蓝海科技有限公司</option>
+                                <option value="绿野仙踪农业发展有限公司">绿野仙踪农业发展有限公司</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item">
+                            <label>收货人</label>
+                            <input type="text" id="receiverName" placeholder="请输入收货人">
+                        </div>
+                        <div class="form-item">
+                            <label>收货人电话</label>
+                            <input type="text" id="receiverPhone" placeholder="请输入收货人电话">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item full">
+                            <label>收货人地址</label>
+                            <input type="text" id="receiverAddress" placeholder="请输入收货人地址">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item">
+                            <label>发货月台</label>
+                            <select id="platform">
+                                <option value="">请选择发货月台</option>
+                                <option value="1号月台">1号月台</option>
+                                <option value="2号月台">2号月台</option>
+                                <option value="3号月台">3号月台</option>
+                            </select>
+                        </div>
+                        <div class="form-item">
+                            <label>费用(元)</label>
+                            <input type="number" id="cost" placeholder="请输入费用" step="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item">
+                            <label>计划交货时间</label>
+                            <input type="date" id="deliveryDate">
+                        </div>
+                        <div class="form-item">
+                            <label>单据状态</label>
+                            <select id="orderStatus">
+                                <option value="进行中">进行中</option>
+                                <option value="已完成">已完成</option>
+                                <option value="已关闭">已关闭</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" onclick="closeModal()">取消</button>
+                <button class="btn btn-primary" onclick="saveOrder()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'outboundOrderData';
+        let orders = [];
+        let currentPage = 1;
+        let pageSize = 20;
+        let filteredOrders = [];
+        let selectedIds = new Set();
+
+        const defaultOrders = [
+            { id: 1, orderNo: 'OMP20221202-0001', customer: '成都达成', receiverName: '李四', receiverPhone: '18421868', receiverAddress: '成都', platform: '3号月台', cost: 200, deliveryDate: '2022-12-10', status: '进行中' },
+            { id: 2, orderNo: 'OMP20221202-0002', customer: '成都胡莱集团', receiverName: '黄晓明', receiverPhone: '1870653256', receiverAddress: '成都', platform: '1号月台', cost: 2000, deliveryDate: '2022-12-10', status: '进行中' }
+        ];
+
+        function getOrders() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                return JSON.parse(data);
+            }
+            saveOrders(defaultOrders);
+            return defaultOrders;
+        }
+
+        function saveOrders(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function init() {
+            localStorage.removeItem(STORAGE_KEY);
+            orders = getOrders();
+            filteredOrders = [...orders];
+            renderTable();
+            updatePagination();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredOrders.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="11" style="text-align: center; padding: 30px; color: #909399;">
+                            暂无数据
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = pageData.map(order => `
+                <tr>
+                    <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedIds.has(order.id) ? 'checked' : ''} onchange="toggleSelect(${order.id})"></td>
+                    <td><span class="order-no">${order.orderNo}</span></td>
+                    <td>${order.customer || '-'}</td>
+                    <td>${order.receiverName || '-'}</td>
+                    <td>${order.receiverPhone || '-'}</td>
+                    <td>${order.receiverAddress || '-'}</td>
+                    <td>${order.platform || '-'}</td>
+                    <td>${order.cost || '-'}</td>
+                    <td>${order.deliveryDate || '-'}</td>
+                    <td>${order.status || '-'}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button class="btn btn-link" onclick="openEditModal(${order.id})">✏️ 编辑</button>
+                            <button class="btn btn-link" style="color: #f56c6c;" onclick="closeOrder(${order.id})">🗑️ 关闭</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updatePagination() {
+            document.getElementById('totalCount').textContent = filteredOrders.length;
+            const totalPages = Math.ceil(filteredOrders.length / pageSize) || 1;
+            
+            document.getElementById('prevBtn').disabled = currentPage <= 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+        }
+
+        function toggleMenu(el) {
+            const group = el.parentElement;
+            group.classList.toggle('open');
+        }
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        function openAddModal() {
+            document.getElementById('modalTitle').textContent = '录入出库计划';
+            document.getElementById('orderForm').reset();
+            document.getElementById('orderId').value = '';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function openEditModal(id) {
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
+
+            document.getElementById('modalTitle').textContent = '编辑出库计划';
+            document.getElementById('orderId').value = order.id;
+            document.getElementById('orderNo').value = order.orderNo || '';
+            document.getElementById('orderCustomer').value = order.customer || '';
+            document.getElementById('receiverName').value = order.receiverName || '';
+            document.getElementById('receiverPhone').value = order.receiverPhone || '';
+            document.getElementById('receiverAddress').value = order.receiverAddress || '';
+            document.getElementById('platform').value = order.platform || '';
+            document.getElementById('cost').value = order.cost || '';
+            document.getElementById('deliveryDate').value = order.deliveryDate || '';
+            document.getElementById('orderStatus').value = order.status || '';
+            document.getElementById('modalOverlay').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        function saveOrder() {
+            const id = document.getElementById('orderId').value;
+            const orderNo = document.getElementById('orderNo').value.trim();
+            const customer = document.getElementById('orderCustomer').value;
+            const receiverName = document.getElementById('receiverName').value.trim();
+            const receiverPhone = document.getElementById('receiverPhone').value.trim();
+            const receiverAddress = document.getElementById('receiverAddress').value.trim();
+            const platform = document.getElementById('platform').value;
+            const cost = parseFloat(document.getElementById('cost').value) || 0;
+            const deliveryDate = document.getElementById('deliveryDate').value;
+            const status = document.getElementById('orderStatus').value;
+
+            if (!orderNo) {
+                alert('请输入出库计划单号');
+                return;
+            }
+            if (!customer) {
+                alert('请选择客户');
+                return;
+            }
+
+            if (id) {
+                const index = orders.findIndex(o => o.id === parseInt(id));
+                if (index !== -1) {
+                    orders[index] = {
+                        ...orders[index],
+                        orderNo, customer, receiverName, receiverPhone, receiverAddress, platform, cost, deliveryDate, status
+                    };
+                }
+            } else {
+                const maxId = orders.length > 0 ? Math.max(...orders.map(o => o.id)) : 0;
+                orders.push({
+                    id: maxId + 1,
+                    orderNo, customer, receiverName, receiverPhone, receiverAddress, platform, cost, deliveryDate, status
+                });
+            }
+
+            saveOrders(orders);
+            filteredOrders = [...orders];
+            searchOrders();
+            closeModal();
+        }
+
+        function closeOrder(id) {
+            if (!confirm('确定要关闭该出库计划吗？')) {
+                return;
+            }
+            const orderIndex = orders.findIndex(o => o.id === id);
+            if (orderIndex !== -1) {
+                orders[orderIndex].status = '已关闭';
+                saveOrders(orders);
+                filteredOrders = [...orders];
+                renderTable();
+            }
+        }
+
+        function batchDelete() {
+            if (selectedIds.size === 0) {
+                alert('请先选择要删除的出库计划');
+                return;
+            }
+            if (!confirm(`确定要删除选中的 ${selectedIds.size} 条记录吗？`)) {
+                return;
+            }
+            orders = orders.filter(o => !selectedIds.has(o.id));
+            saveOrders(orders);
+            filteredOrders = filteredOrders.filter(o => !selectedIds.has(o.id));
+            selectedIds.clear();
+            document.getElementById('selectAll').checked = false;
+            renderTable();
+            updatePagination();
+        }
+
+        function toggleSelect(id) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+            updateSelectAll();
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll').checked;
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredOrders.slice(start, end);
+            
+            if (selectAll) {
+                pageData.forEach(o => selectedIds.add(o.id));
+            } else {
+                pageData.forEach(o => selectedIds.delete(o.id));
+            }
+            renderTable();
+        }
+
+        function updateSelectAll() {
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredOrders.slice(start, end);
+            
+            const allSelected = pageData.length > 0 && pageData.every(o => selectedIds.has(o.id));
+            document.getElementById('selectAll').checked = allSelected;
+        }
+
+        function searchOrders() {
+            const orderNo = document.getElementById('searchOrderNo').value.trim().toLowerCase();
+            const status = document.getElementById('searchStatus').value;
+
+            filteredOrders = orders.filter(o => {
+                let match = true;
+                if (orderNo && !o.orderNo.toLowerCase().includes(orderNo)) match = false;
+                if (status && o.status !== status) match = false;
+                return match;
+            });
+
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        function resetSearch() {
+            document.getElementById('searchOrderNo').value = '';
+            document.getElementById('searchStatus').value = '';
+            filteredOrders = [...orders];
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        function prevPage() {
+            if (currentPage > 1) {
+                currentPage--;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredOrders.length / pageSize);
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderTable();
+                updatePagination();
+            }
+        }
+
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById('pageSize').value);
+            currentPage = 1;
+            renderTable();
+            updatePagination();
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+
+        document.getElementById('modalOverlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modalOverlay')) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
