@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>车辆管理</title>
+    <title>入库计划</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
         body { background: #f5f7fa; min-height: 100vh; }
@@ -56,7 +56,7 @@
         th { background: #fafafa; font-weight: 600; color: #303133; }
         td { color: #606266; }
         tbody tr:hover { background: #f5f7fa; }
-        .vehicle-plate { color: #1890ff; cursor: pointer; }
+        .order-no { color: #1890ff; cursor: pointer; }
         .table-actions { display: flex; gap: 3px; }
         
         .pagination { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #606266; }
@@ -93,6 +93,22 @@
         .menu-group-content { display: none; }
         .menu-group.open .menu-group-content { display: block; }
         .menu-group.open .menu-arrow { transform: rotate(180deg); }
+        
+        .goods-modal { position: fixed; right: -400px; top: 0; width: 400px; height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s; display: flex; flex-direction: column; }
+        .goods-modal.open { right: 0; }
+        .goods-header { padding: 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .goods-header h3 { font-size: 16px; font-weight: 600; color: #303133; }
+        .close-goods { background: none; border: none; font-size: 20px; cursor: pointer; color: #909399; padding: 4px; }
+        .goods-body { flex: 1; padding: 16px; overflow-y: auto; }
+        .goods-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+        .goods-list { margin-top: 16px; }
+        .goods-item { padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .goods-info { flex: 1; }
+        .goods-name { font-size: 13px; color: #303133; }
+        .goods-spec { font-size: 12px; color: #909399; margin-top: 4px; }
+        .goods-qty { font-size: 12px; color: #606266; }
+        .goods-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: none; z-index: 1000; }
+        .goods-overlay.active { display: block; }
     </style>
 </head>
 <body>
@@ -121,7 +137,7 @@
                             <span>📄</span>
                             <span>公司管理</span>
                         </div>
-                        <div class="menu-item active">
+                        <div class="menu-item" onclick="navigateTo('7_2.html')">
                             <span>🚗</span>
                             <span>车辆管理</span>
                         </div>
@@ -146,7 +162,7 @@
                         <span class="menu-arrow">∨</span>
                     </div>
                     <div class="menu-group-content menu-sub">
-                        <div class="menu-item" onclick="navigateTo('8_1.html')">
+                        <div class="menu-item active">
                             <span>📥</span>
                             <span>入库计划</span>
                         </div>
@@ -215,39 +231,27 @@
             <div class="content">
                 <div class="card">
                     <div class="breadcrumb">
-                        基础管理
+                        计划单管理
                         <span>/</span>
-                        <span class="current">车辆管理</span>
+                        <span class="current">入库计划</span>
                     </div>
 
                     <div class="search-bar">
                         <div class="search-item">
-                            <label>所属公司</label>
-                            <select id="searchCompany">
-                                <option value="">请选择</option>
-                                <option value="京东物流成都分公司">京东物流成都分公司</option>
-                                <option value="全球通物流有限公司">全球通物流有限公司</option>
-                                <option value="通达货运有限公司">通达货运有限公司</option>
-                                <option value="速达物流有限公司">速达物流有限公司</option>
-                                <option value="邮政物流公司">邮政物流公司</option>
-                                <option value="顺丰物流成都分公司">顺丰物流成都分公司</option>
-                            </select>
+                            <label>入库计划单号</label>
+                            <input type="text" id="searchOrderNo" placeholder="请输入入库计划单号">
                         </div>
                         <div class="search-item">
-                            <label>车牌</label>
-                            <input type="text" id="searchPlate" placeholder="请输入车牌">
-                        </div>
-                        <div class="search-item">
-                            <label>牵引</label>
-                            <select id="searchTraction">
-                                <option value="">请选择</option>
-                                <option value="半挂车">半挂车</option>
-                                <option value="全挂车">全挂车</option>
-                                <option value="中轴挂车">中轴挂车</option>
+                            <label>单据状态</label>
+                            <select id="searchStatus">
+                                <option value="">请选择单据状态</option>
+                                <option value="未分配">未分配</option>
+                                <option value="已分配">已分配</option>
+                                <option value="已完成">已完成</option>
                             </select>
                         </div>
                         <div class="search-btns">
-                            <button class="btn btn-primary" onclick="searchVehicles()">
+                            <button class="btn btn-primary" onclick="searchOrders()">
                                 <span>🔍</span>
                                 查询
                             </button>
@@ -270,21 +274,19 @@
                     </div>
 
                     <div class="table-container">
-                        <table id="vehicleTable">
+                        <table id="orderTable">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" class="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                                    <th>车牌</th>
-                                    <th>所属公司</th>
-                                    <th>车型</th>
-                                    <th>牵引</th>
-                                    <th>车辆载重(吨)</th>
-                                    <th>车辆重量(吨)</th>
-                                    <th>车长(m)</th>
-                                    <th>车宽(m)</th>
-                                    <th>车高(m)</th>
-                                    <th>联系电话</th>
-                                    <th>类别</th>
+                                    <th>入库计划单号</th>
+                                    <th>客户</th>
+                                    <th>客户订单号</th>
+                                    <th>月台</th>
+                                    <th>供应商</th>
+                                    <th>仓储</th>
+                                    <th>费用(元)</th>
+                                    <th>预计到货时间</th>
+                                    <th>单据状态</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -321,92 +323,83 @@
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
-                <h3 id="modalTitle">录入车辆</h3>
+                <h3 id="modalTitle">录入入库计划</h3>
                 <button class="close-btn" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
-                <form id="vehicleForm">
-                    <input type="hidden" id="vehicleId">
+                <form id="orderForm">
+                    <input type="hidden" id="orderId">
                     <div class="form-row">
                         <div class="form-item">
-                            <label><span class="required">*</span>车牌</label>
-                            <input type="text" id="vehiclePlate" placeholder="请输入车牌">
+                            <label><span class="required">*</span>入库计划单号</label>
+                            <input type="text" id="orderNo" placeholder="请输入入库计划单号">
                         </div>
                         <div class="form-item">
-                            <label><span class="required">*</span>所属公司</label>
-                            <select id="vehicleCompany">
-                                <option value="">请选择公司</option>
-                                <option value="京东物流成都分公司">京东物流成都分公司</option>
-                                <option value="全球通物流有限公司">全球通物流有限公司</option>
-                                <option value="通达货运有限公司">通达货运有限公司</option>
+                            <label><span class="required">*</span>客户</label>
+                            <select id="orderCustomer">
+                                <option value="">请选择客户</option>
+                                <option value="蓝海科技有限公司">蓝海科技有限公司</option>
+                                <option value="绿野仙踪农业发展有限公司">绿野仙踪农业发展有限公司</option>
+                                <option value="银月贸易有限公司">银月贸易有限公司</option>
+                                <option value="红星教育咨询有限公司">红星教育咨询有限公司</option>
+                                <option value="金石建筑有限公司">金石建筑有限公司</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item">
+                            <label>客户订单号</label>
+                            <input type="text" id="customerOrderNo" placeholder="请输入客户订单号">
+                        </div>
+                        <div class="form-item">
+                            <label>月台</label>
+                            <select id="orderPlatform">
+                                <option value="">请选择月台</option>
+                                <option value="1号月台">1号月台</option>
+                                <option value="2号月台">2号月台</option>
+                                <option value="3号月台">3号月台</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-item">
+                            <label>供应商</label>
+                            <select id="orderSupplier">
+                                <option value="">请选择供应商</option>
                                 <option value="速达物流有限公司">速达物流有限公司</option>
-                                <option value="邮政物流公司">邮政物流公司</option>
-                                <option value="顺丰物流成都分公司">顺丰物流成都分公司</option>
+                                <option value="顺风快运有限公司">顺风快运有限公司</option>
+                                <option value="全球通物流有限公司">全球通物流有限公司</option>
+                                <option value="捷运物流有限公司">捷运物流有限公司</option>
+                                <option value="通达货运有限公司">通达货运有限公司</option>
+                            </select>
+                        </div>
+                        <div class="form-item">
+                            <label>仓储</label>
+                            <select id="orderStorage">
+                                <option value="">请选择仓储</option>
+                                <option value="冻库01">冻库01</option>
+                                <option value="8号库">8号库</option>
+                                <option value="7号库">7号库</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-item">
-                            <label><span class="required">*</span>车型</label>
-                            <select id="vehicleType">
-                                <option value="">请选择车型</option>
-                                <option value="半挂车">半挂车</option>
-                                <option value="特种车">特种车</option>
-                                <option value="危险品车">危险品车</option>
-                                <option value="冷藏车">冷藏车</option>
-                                <option value="平板车">平板车</option>
-                                <option value="厢式货车">厢式货车</option>
-                                <option value="货车">货车</option>
-                                <option value="集装箱车">集装箱车</option>
-                            </select>
+                            <label>费用(元)</label>
+                            <input type="number" id="orderCost" placeholder="请输入费用" step="0.01">
                         </div>
                         <div class="form-item">
-                            <label>牵引</label>
-                            <select id="vehicleTraction">
-                                <option value="">请选择</option>
-                                <option value="半挂车">半挂车</option>
-                                <option value="全挂车">全挂车</option>
-                                <option value="中轴挂车">中轴挂车</option>
-                            </select>
+                            <label>预计到货时间</label>
+                            <input type="date" id="orderDate">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-item">
-                            <label>车辆载重(吨)</label>
-                            <input type="number" id="vehicleLoad" placeholder="请输入载重" step="0.1">
-                        </div>
-                        <div class="form-item">
-                            <label>车辆重量(吨)</label>
-                            <input type="number" id="vehicleWeight" placeholder="请输入重量" step="0.1">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-item">
-                            <label>车长(m)</label>
-                            <input type="number" id="vehicleLength" placeholder="请输入车长" step="0.1">
-                        </div>
-                        <div class="form-item">
-                            <label>车宽(m)</label>
-                            <input type="number" id="vehicleWidth" placeholder="请输入车宽" step="0.1">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-item">
-                            <label>车高(m)</label>
-                            <input type="number" id="vehicleHeight" placeholder="请输入车高" step="0.1">
-                        </div>
-                        <div class="form-item">
-                            <label>联系电话</label>
-                            <input type="text" id="vehiclePhone" placeholder="请输入联系电话">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-item">
-                            <label>类别</label>
-                            <select id="vehicleCategory">
-                                <option value="">请选择类别</option>
-                                <option value="园内车辆">园内车辆</option>
-                                <option value="园外车辆">园外车辆</option>
+                            <label>单据状态</label>
+                            <select id="orderStatus">
+                                <option value="未分配">未分配</option>
+                                <option value="已分配">已分配</option>
+                                <option value="已完成">已完成</option>
                             </select>
                         </div>
                     </div>
@@ -414,69 +407,78 @@
             </div>
             <div class="modal-footer">
                 <button class="btn" onclick="closeModal()">取消</button>
-                <button class="btn btn-primary" onclick="saveVehicle()">确定</button>
+                <button class="btn btn-primary" onclick="saveOrder()">确定</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const defaultVehicles = [
-            { id: 1, plate: '京A15489', company: '京东物流成都分公司', type: '半挂车', traction: '半挂车', load: 2.5, weight: 2, length: 17.5, width: 2, height: 3.5, phone: '010-98765432', category: '园内车辆' },
-            { id: 2, plate: '苏D89012', company: '京东物流成都分公司', type: '特种车', traction: '半挂车', load: 8, weight: 10, length: 8.5, width: 2.2, height: 3, phone: '18708101718', category: '园内车辆' },
-            { id: 3, plate: '苏D89012', company: '京东物流成都分公司', type: '特种车', traction: '半挂车', load: 8, weight: 10, length: 8.5, width: 2.2, height: 3, phone: '18708101718', category: '园内车辆' },
-            { id: 4, plate: '湘C-V9012', company: '京东物流成都分公司', type: '危险品车', traction: '全挂车', load: 25, weight: 18, length: 14.5, width: 2.6, height: 3.9, phone: '0731-23456789', category: '园内车辆' },
-            { id: 5, plate: '粤C34567', company: '全球通物流有限公司', type: '冷藏车', traction: '中轴挂车', load: 20, weight: 12, length: 12, width: 2.5, height: 3.5, phone: '022-87654321', category: '园内车辆' },
-            { id: 6, plate: '粤C34567', company: '全球通物流有限公司', type: '冷藏车', traction: '中轴挂车', load: 20, weight: 12, length: 12, width: 2.5, height: 3.5, phone: '022-87654321', category: '园内车辆' },
-            { id: 7, plate: '闽E-R7890', company: '全球通物流有限公司', type: '平板车', traction: '全挂车', load: 40, weight: 15, length: 17, width: 2.7, height: 3.5, phone: '0592-45678901', category: '园内车辆' },
-            { id: 8, plate: '豫B-X567', company: '通达货运有限公司', type: '冷藏车', traction: '全挂车', load: 15, weight: 10, length: 12, width: 2.4, height: 3, phone: '0371-87654321', category: '园外车辆' },
-            { id: 9, plate: '沪B67890', company: '速达物流有限公司', type: '厢式货车', traction: '半挂车', load: 10, weight: 8, length: 9.6, width: 2.4, height: 3, phone: '021-54321098', category: '园内车辆' },
-            { id: 10, plate: '沪B34592', company: '速达物流有限公司', type: '厢式货车', traction: '半挂车', load: 20.5, weight: 10, length: 5, width: 2, height: 3, phone: '18708101718', category: '园内车辆' },
-            { id: 11, plate: '浙E54321', company: '邮政物流公司', type: '危险品车', traction: '半挂车', load: 30, weight: 18, length: 16, width: 2.6, height: 3.7, phone: '024-34567890', category: '园内车辆' },
-            { id: 12, plate: '皖D-T3456', company: '邮政物流公司', type: '厢式货车', traction: '半挂车', load: 10, weight: 8, length: 9.5, width: 2.3, height: 3, phone: '0551-34567890', category: '园内车辆' },
-            { id: 13, plate: '川A98989', company: '顺丰物流成都分公司', type: '货车', traction: '半挂车', load: 20, weight: 10, length: 10, width: 2.5, height: 3.5, phone: '18708941326', category: '园外车辆' },
-            { id: 14, plate: '鲁A-Z1234', company: '顺丰物流成都分公司', type: '集装箱车', traction: '中轴挂车', load: 35, weight: 20, length: 16, width: 2.5, height: 4, phone: '0531-12345678', category: '园内车辆' },
-            { id: 15, plate: '京B-88765', company: '京东物流成都分公司', type: '半挂车', traction: '半挂车', load: 25, weight: 12, length: 16, width: 2.6, height: 3.8, phone: '010-11112222', category: '园内车辆' },
-            { id: 16, plate: '沪C-55667', company: '全球通物流有限公司', type: '冷藏车', traction: '全挂车', load: 18, weight: 11, length: 14, width: 2.4, height: 3.2, phone: '021-22223333', category: '园外车辆' },
-            { id: 17, plate: '粤A-99887', company: '通达货运有限公司', type: '危险品车', traction: '全挂车', load: 32, weight: 20, length: 17, width: 2.8, height: 4, phone: '020-33334444', category: '园内车辆' },
-            { id: 18, plate: '苏A-11223', company: '速达物流有限公司', type: '平板车', traction: '中轴挂车', load: 45, weight: 18, length: 18, width: 2.9, height: 3.6, phone: '025-44445555', category: '园内车辆' },
-            { id: 19, plate: '浙B-55667', company: '邮政物流公司', type: '厢式货车', traction: '半挂车', load: 12, weight: 9, length: 10, width: 2.3, height: 3.1, phone: '0574-55556666', category: '园外车辆' },
-            { id: 20, plate: '川B-77889', company: '顺丰物流成都分公司', type: '货车', traction: '半挂车', load: 15, weight: 8, length: 11, width: 2.4, height: 3.3, phone: '0816-66667777', category: '园内车辆' },
-            { id: 21, plate: '渝A-33445', company: '京东物流成都分公司', type: '特种车', traction: '全挂车', load: 35, weight: 22, length: 15, width: 2.7, height: 4.2, phone: '023-77778888', category: '园内车辆' },
-            { id: 22, plate: '冀A-66778', company: '全球通物流有限公司', type: '冷藏车', traction: '半挂车', load: 16, weight: 10, length: 13, width: 2.5, height: 3.4, phone: '0311-88889999', category: '园内车辆' },
-            { id: 23, plate: '晋A-99001', company: '通达货运有限公司', type: '厢式货车', traction: '中轴挂车', load: 22, weight: 13, length: 14, width: 2.6, height: 3.5, phone: '0351-99990000', category: '园外车辆' },
-            { id: 24, plate: '辽A-22334', company: '速达物流有限公司', type: '危险品车', traction: '全挂车', load: 28, weight: 17, length: 15.5, width: 2.6, height: 3.9, phone: '024-00001111', category: '园内车辆' },
-            { id: 25, plate: '吉A-55667', company: '邮政物流公司', type: '货车', traction: '半挂车', load: 18, weight: 11, length: 12, width: 2.5, height: 3.2, phone: '0431-11112222', category: '园内车辆' },
-            { id: 26, plate: '黑A-88990', company: '顺丰物流成都分公司', type: '集装箱车', traction: '全挂车', load: 40, weight: 25, length: 17.5, width: 2.8, height: 4.1, phone: '0451-22223333', category: '园内车辆' },
-            { id: 27, plate: '苏E-11223', company: '京东物流成都分公司', type: '半挂车', traction: '半挂车', load: 20, weight: 12, length: 15, width: 2.5, height: 3.6, phone: '0512-33334444', category: '园外车辆' },
-            { id: 28, plate: '浙C-44556', company: '全球通物流有限公司', type: '平板车', traction: '中轴挂车', load: 38, weight: 16, length: 16.5, width: 2.7, height: 3.5, phone: '0577-44445555', category: '园内车辆' },
-            { id: 29, plate: '皖B-77889', company: '通达货运有限公司', type: '冷藏车', traction: '半挂车', load: 14, weight: 9, length: 11, width: 2.4, height: 3.1, phone: '0553-55556666', category: '园内车辆' },
-            { id: 30, plate: '闽A-00112', company: '速达物流有限公司', type: '厢式货车', traction: '半挂车', load: 10, weight: 8, length: 9, width: 2.2, height: 2.9, phone: '0591-66667777', category: '园内车辆' }
-        ];
+    <div class="goods-overlay" id="goodsOverlay" onclick="closeGoodsModal()"></div>
+    <div class="goods-modal" id="goodsModal">
+        <div class="goods-header">
+            <h3>添加商品</h3>
+            <button class="close-goods" onclick="closeGoodsModal()">×</button>
+        </div>
+        <div class="goods-body">
+            <div class="form-row">
+                <div class="form-item">
+                    <label><span class="required">*</span>商品名称</label>
+                    <input type="text" id="goodsName" placeholder="请输入商品名称">
+                </div>
+                <div class="form-item">
+                    <label>规格</label>
+                    <input type="text" id="goodsSpec" placeholder="请输入规格">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>数量</label>
+                    <input type="number" id="goodsQty" placeholder="请输入数量" value="1">
+                </div>
+            </div>
+            <div class="goods-list" id="goodsList">
+                <div style="text-align: center; color: #909399; padding: 20px;">暂无商品</div>
+            </div>
+        </div>
+        <div class="goods-footer">
+            <button class="btn btn-primary" onclick="addGoods()">添加</button>
+            <button class="btn" onclick="closeGoodsModal()">取消</button>
+        </div>
+    </div>
 
-        const STORAGE_KEY = 'vehicleManagementData';
-        let vehicles = [];
+    <script>
+        const STORAGE_KEY = 'inboundOrderData';
+        let orders = [];
         let currentPage = 1;
         let pageSize = 20;
-        let filteredVehicles = [];
+        let filteredOrders = [];
         let selectedIds = new Set();
+        let currentOrderId = null;
 
-        function getVehicles() {
+        const defaultOrders = [
+            { id: 1, orderNo: 'IMP20250619-0001', customer: '蓝海科技有限公司', customerOrderNo: 'OD123456', platform: '1号月台', supplier: '速达物流有限公司', storage: '冻库01', cost: 500, date: '2025-06-19', status: '未分配' },
+            { id: 2, orderNo: 'IMP20250619-0002', customer: '绿野仙踪农业发展有限公司', customerOrderNo: 'OD654321', platform: '1号月台', supplier: '顺风快运有限公司', storage: '冻库01', cost: 800, date: '2025-06-18', status: '未分配' },
+            { id: 3, orderNo: 'IMP20250619-0004', customer: '银月贸易有限公司', customerOrderNo: 'OD246810', platform: '3号月台', supplier: '全球通物流有限公司', storage: '8号库', cost: 1200, date: '2024-11-14', status: '未分配' },
+            { id: 4, orderNo: 'IMP20250619-0005', customer: '红星教育咨询有限公司', customerOrderNo: 'OD135792', platform: '2号月台', supplier: '捷运物流有限公司', storage: '7号库', cost: 1000, date: '2025-03-12', status: '未分配' },
+            { id: 5, orderNo: 'IMP20250619-0003', customer: '金石建筑有限公司', customerOrderNo: 'OD987654', platform: '2号月台', supplier: '通达货运有限公司', storage: '7号库', cost: 900, date: '2024-04-18', status: '未分配' }
+        ];
+
+        function getOrders() {
             const data = localStorage.getItem(STORAGE_KEY);
             if (data) {
                 return JSON.parse(data);
             }
-            saveVehicles(defaultVehicles);
-            return defaultVehicles;
+            saveOrders(defaultOrders);
+            return defaultOrders;
         }
 
-        function saveVehicles(data) {
+        function saveOrders(data) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
         function init() {
             localStorage.removeItem(STORAGE_KEY);
-            vehicles = getVehicles();
-            filteredVehicles = [...vehicles];
+            orders = getOrders();
+            filteredOrders = [...orders];
             renderTable();
             updatePagination();
         }
@@ -485,12 +487,12 @@
             const tbody = document.getElementById('tableBody');
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredVehicles.slice(start, end);
+            const pageData = filteredOrders.slice(start, end);
 
             if (pageData.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="13" style="text-align: center; padding: 30px; color: #909399;">
+                        <td colspan="11" style="text-align: center; padding: 30px; color: #909399;">
                             暂无数据
                         </td>
                     </tr>
@@ -498,24 +500,23 @@
                 return;
             }
 
-            tbody.innerHTML = pageData.map(vehicle => `
+            tbody.innerHTML = pageData.map(order => `
                 <tr>
-                    <td><input type="checkbox" class="checkbox" data-id="${vehicle.id}" ${selectedIds.has(vehicle.id) ? 'checked' : ''} onchange="toggleSelect(${vehicle.id})"></td>
-                    <td><span class="vehicle-plate">${vehicle.plate}</span></td>
-                    <td>${vehicle.company || '-'}</td>
-                    <td>${vehicle.type || '-'}</td>
-                    <td>${vehicle.traction || '-'}</td>
-                    <td>${vehicle.load || '-'}</td>
-                    <td>${vehicle.weight || '-'}</td>
-                    <td>${vehicle.length || '-'}</td>
-                    <td>${vehicle.width || '-'}</td>
-                    <td>${vehicle.height || '-'}</td>
-                    <td>${vehicle.phone || '-'}</td>
-                    <td>${vehicle.category || '-'}</td>
+                    <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedIds.has(order.id) ? 'checked' : ''} onchange="toggleSelect(${order.id})"></td>
+                    <td><span class="order-no">${order.orderNo}</span></td>
+                    <td>${order.customer || '-'}</td>
+                    <td>${order.customerOrderNo || '-'}</td>
+                    <td>${order.platform || '-'}</td>
+                    <td>${order.supplier || '-'}</td>
+                    <td>${order.storage || '-'}</td>
+                    <td>${order.cost || '-'}</td>
+                    <td>${order.date || '-'}</td>
+                    <td>${order.status || '-'}</td>
                     <td>
                         <div class="table-actions">
-                            <button class="btn btn-link" onclick="openEditModal(${vehicle.id})">✏️ 编辑</button>
-                            <button class="btn btn-link" style="color: #f56c6c;" onclick="deleteVehicle(${vehicle.id})">🗑️ 删除</button>
+                            <button class="btn btn-link" onclick="openEditModal(${order.id})">✏️ 编辑</button>
+                            <button class="btn btn-link" onclick="openGoodsModal(${order.id})">📦 添加商品</button>
+                            <button class="btn btn-link" style="color: #f56c6c;" onclick="deleteOrder(${order.id})">🗑️ 删除</button>
                         </div>
                     </td>
                 </tr>
@@ -523,8 +524,8 @@
         }
 
         function updatePagination() {
-            document.getElementById('totalCount').textContent = filteredVehicles.length;
-            const totalPages = Math.ceil(filteredVehicles.length / pageSize) || 1;
+            document.getElementById('totalCount').textContent = filteredOrders.length;
+            const totalPages = Math.ceil(filteredOrders.length / pageSize) || 1;
             
             document.getElementById('prevBtn').disabled = currentPage <= 1;
             document.getElementById('nextBtn').disabled = currentPage >= totalPages;
@@ -540,29 +541,27 @@
         }
 
         function openAddModal() {
-            document.getElementById('modalTitle').textContent = '录入车辆';
-            document.getElementById('vehicleForm').reset();
-            document.getElementById('vehicleId').value = '';
+            document.getElementById('modalTitle').textContent = '录入入库计划';
+            document.getElementById('orderForm').reset();
+            document.getElementById('orderId').value = '';
             document.getElementById('modalOverlay').classList.add('active');
         }
 
         function openEditModal(id) {
-            const vehicle = vehicles.find(v => v.id === id);
-            if (!vehicle) return;
+            const order = orders.find(o => o.id === id);
+            if (!order) return;
 
-            document.getElementById('modalTitle').textContent = '编辑车辆';
-            document.getElementById('vehicleId').value = vehicle.id;
-            document.getElementById('vehiclePlate').value = vehicle.plate || '';
-            document.getElementById('vehicleCompany').value = vehicle.company || '';
-            document.getElementById('vehicleType').value = vehicle.type || '';
-            document.getElementById('vehicleTraction').value = vehicle.traction || '';
-            document.getElementById('vehicleLoad').value = vehicle.load || '';
-            document.getElementById('vehicleWeight').value = vehicle.weight || '';
-            document.getElementById('vehicleLength').value = vehicle.length || '';
-            document.getElementById('vehicleWidth').value = vehicle.width || '';
-            document.getElementById('vehicleHeight').value = vehicle.height || '';
-            document.getElementById('vehiclePhone').value = vehicle.phone || '';
-            document.getElementById('vehicleCategory').value = vehicle.category || '';
+            document.getElementById('modalTitle').textContent = '编辑入库计划';
+            document.getElementById('orderId').value = order.id;
+            document.getElementById('orderNo').value = order.orderNo || '';
+            document.getElementById('orderCustomer').value = order.customer || '';
+            document.getElementById('customerOrderNo').value = order.customerOrderNo || '';
+            document.getElementById('orderPlatform').value = order.platform || '';
+            document.getElementById('orderSupplier').value = order.supplier || '';
+            document.getElementById('orderStorage').value = order.storage || '';
+            document.getElementById('orderCost').value = order.cost || '';
+            document.getElementById('orderDate').value = order.date || '';
+            document.getElementById('orderStatus').value = order.status || '';
             document.getElementById('modalOverlay').classList.add('active');
         }
 
@@ -570,77 +569,71 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
-        function saveVehicle() {
-            const id = document.getElementById('vehicleId').value;
-            const plate = document.getElementById('vehiclePlate').value.trim();
-            const company = document.getElementById('vehicleCompany').value;
-            const type = document.getElementById('vehicleType').value;
-            const traction = document.getElementById('vehicleTraction').value;
-            const load = parseFloat(document.getElementById('vehicleLoad').value) || 0;
-            const weight = parseFloat(document.getElementById('vehicleWeight').value) || 0;
-            const length = parseFloat(document.getElementById('vehicleLength').value) || 0;
-            const width = parseFloat(document.getElementById('vehicleWidth').value) || 0;
-            const height = parseFloat(document.getElementById('vehicleHeight').value) || 0;
-            const phone = document.getElementById('vehiclePhone').value.trim();
-            const category = document.getElementById('vehicleCategory').value;
+        function saveOrder() {
+            const id = document.getElementById('orderId').value;
+            const orderNo = document.getElementById('orderNo').value.trim();
+            const customer = document.getElementById('orderCustomer').value;
+            const customerOrderNo = document.getElementById('customerOrderNo').value.trim();
+            const platform = document.getElementById('orderPlatform').value;
+            const supplier = document.getElementById('orderSupplier').value;
+            const storage = document.getElementById('orderStorage').value;
+            const cost = parseFloat(document.getElementById('orderCost').value) || 0;
+            const date = document.getElementById('orderDate').value;
+            const status = document.getElementById('orderStatus').value;
 
-            if (!plate) {
-                alert('请输入车牌');
+            if (!orderNo) {
+                alert('请输入入库计划单号');
                 return;
             }
-            if (!company) {
-                alert('请选择所属公司');
-                return;
-            }
-            if (!type) {
-                alert('请选择车型');
+            if (!customer) {
+                alert('请选择客户');
                 return;
             }
 
             if (id) {
-                const index = vehicles.findIndex(v => v.id === parseInt(id));
+                const index = orders.findIndex(o => o.id === parseInt(id));
                 if (index !== -1) {
-                    vehicles[index] = {
-                        ...vehicles[index],
-                        plate, company, type, traction, load, weight, length, width, height, phone, category
+                    orders[index] = {
+                        ...orders[index],
+                        orderNo, customer, customerOrderNo, platform, supplier, storage, cost, date, status
                     };
                 }
             } else {
-                const maxId = vehicles.length > 0 ? Math.max(...vehicles.map(v => v.id)) : 0;
-                vehicles.push({
+                const maxId = orders.length > 0 ? Math.max(...orders.map(o => o.id)) : 0;
+                orders.push({
                     id: maxId + 1,
-                    plate, company, type, traction, load, weight, length, width, height, phone, category
+                    orderNo, customer, customerOrderNo, platform, supplier, storage, cost, date, status
                 });
             }
 
-            saveVehicles(vehicles);
-            filteredVehicles = [...vehicles];
-            searchVehicles();
+            saveOrders(orders);
+            filteredOrders = [...orders];
+            searchOrders();
             closeModal();
         }
 
-        function deleteVehicle(id) {
-            if (!confirm('确定要删除该车辆吗？')) {
+        function deleteOrder(id) {
+            if (!confirm('确定要删除该入库计划吗？')) {
                 return;
             }
-            vehicles = vehicles.filter(v => v.id !== id);
-            saveVehicles(vehicles);
-            filteredVehicles = filteredVehicles.filter(v => v.id !== id);
+            orders = orders.filter(o => o.id !== id);
+            saveOrders(orders);
+            filteredOrders = filteredOrders.filter(o => o.id !== id);
             renderTable();
             updatePagination();
         }
 
         function batchDelete() {
             if (selectedIds.size === 0) {
-                alert('请先选择要删除的车辆');
+                alert('请先选择要删除的入库计划');
                 return;
             }
             if (!confirm(`确定要删除选中的 ${selectedIds.size} 条记录吗？`)) {
                 return;
             }
-            vehicles = vehicles.filter(v => !selectedIds.has(v.id));
-            saveVehicles(vehicles);
-            filteredVehicles = filteredVehicles.filter(v => !selectedIds.has(v.id));
+            orders = orders.filter(o => !selectedIds.has(o.id));
+            saveOrders(orders);
+            filteredOrders = filteredOrders.filter(o => !selectedIds.has(o.id));
             selectedIds.clear();
             document.getElementById('selectAll').checked = false;
             renderTable();
@@ -660,12 +653,12 @@
             const selectAll = document.getElementById('selectAll').checked;
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredVehicles.slice(start, end);
+            const pageData = filteredOrders.slice(start, end);
             
             if (selectAll) {
-                pageData.forEach(v => selectedIds.add(v.id));
+                pageData.forEach(o => selectedIds.add(o.id));
             } else {
-                pageData.forEach(v => selectedIds.delete(v.id));
+                pageData.forEach(o => selectedIds.delete(o.id));
             }
             renderTable();
         }
@@ -673,22 +666,20 @@
         function updateSelectAll() {
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredVehicles.slice(start, end);
+            const pageData = filteredOrders.slice(start, end);
             
-            const allSelected = pageData.length > 0 && pageData.every(v => selectedIds.has(v.id));
+            const allSelected = pageData.length > 0 && pageData.every(o => selectedIds.has(o.id));
             document.getElementById('selectAll').checked = allSelected;
         }
 
-        function searchVehicles() {
-            const company = document.getElementById('searchCompany').value;
-            const plate = document.getElementById('searchPlate').value.trim().toLowerCase();
-            const traction = document.getElementById('searchTraction').value;
+        function searchOrders() {
+            const orderNo = document.getElementById('searchOrderNo').value.trim().toLowerCase();
+            const status = document.getElementById('searchStatus').value;
 
-            filteredVehicles = vehicles.filter(v => {
+            filteredOrders = orders.filter(o => {
                 let match = true;
-                if (company && v.company !== company) match = false;
-                if (plate && !v.plate.toLowerCase().includes(plate)) match = false;
-                if (traction && v.traction !== traction) match = false;
+                if (orderNo && !o.orderNo.toLowerCase().includes(orderNo)) match = false;
+                if (status && o.status !== status) match = false;
                 return match;
             });
 
@@ -698,10 +689,9 @@
         }
 
         function resetSearch() {
-            document.getElementById('searchCompany').value = '';
-            document.getElementById('searchPlate').value = '';
-            document.getElementById('searchTraction').value = '';
-            filteredVehicles = [...vehicles];
+            document.getElementById('searchOrderNo').value = '';
+            document.getElementById('searchStatus').value = '';
+            filteredOrders = [...orders];
             currentPage = 1;
             renderTable();
             updatePagination();
@@ -716,7 +706,7 @@
         }
 
         function nextPage() {
-            const totalPages = Math.ceil(filteredVehicles.length / pageSize);
+            const totalPages = Math.ceil(filteredOrders.length / pageSize);
             if (currentPage < totalPages) {
                 currentPage++;
                 renderTable();
@@ -729,6 +719,49 @@
             currentPage = 1;
             renderTable();
             updatePagination();
+        }
+
+        function openGoodsModal(orderId) {
+            currentOrderId = orderId;
+            document.getElementById('goodsList').innerHTML = '<div style="text-align: center; color: #909399; padding: 20px;">暂无商品</div>';
+            document.getElementById('goodsOverlay').classList.add('active');
+            document.getElementById('goodsModal').classList.add('open');
+        }
+
+        function closeGoodsModal() {
+            document.getElementById('goodsOverlay').classList.remove('active');
+            document.getElementById('goodsModal').classList.remove('open');
+            currentOrderId = null;
+        }
+
+        function addGoods() {
+            const name = document.getElementById('goodsName').value.trim();
+            const spec = document.getElementById('goodsSpec').value.trim();
+            const qty = parseInt(document.getElementById('goodsQty').value) || 1;
+
+            if (!name) {
+                alert('请输入商品名称');
+                return;
+            }
+
+            const goodsList = document.getElementById('goodsList');
+            if (goodsList.innerHTML.includes('暂无商品')) {
+                goodsList.innerHTML = '';
+            }
+
+            goodsList.innerHTML += `
+                <div class="goods-item">
+                    <div class="goods-info">
+                        <div class="goods-name">${name}</div>
+                        <div class="goods-spec">${spec || '无规格'}</div>
+                    </div>
+                    <div class="goods-qty">${qty}件</div>
+                </div>
+            `;
+
+            document.getElementById('goodsName').value = '';
+            document.getElementById('goodsSpec').value = '';
+            document.getElementById('goodsQty').value = '1';
         }
 
         document.addEventListener('DOMContentLoaded', init);
