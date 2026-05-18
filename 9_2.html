@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>车辆指派</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 200px; background: #fff; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 14px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; }
+        .logo { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+        .sidebar-title { font-size: 14px; font-weight: 600; color: #262626; }
+        .menu { flex: 1; padding: 4px 0; overflow-y: auto; }
+        .menu-item { padding: 10px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: #595959; transition: all 0.2s; font-size: 13px; }
+        .menu-item:hover { background: #e6f7ff; color: #1890ff; }
+        .menu-item.active { background: #e6f7ff; color: #1890ff; border-right: 2px solid #1890ff; }
+        .menu-sub { background: #fafafa; }
+        .menu-sub .menu-item { padding-left: 40px; font-size: 12px; }
+        .menu-arrow { margin-left: auto; font-size: 10px; }
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: center; }
+        .search-box { width: 260px; height: 36px; background: #f5f7fa; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; }
+        .content { flex: 1; padding: 12px; overflow-y: auto; }
+        
+        .card { background: #fff; border-radius: 4px; border: 1px solid #e8e8e8; padding: 16px; }
+        
+        .breadcrumb { font-size: 12px; color: #606266; margin-bottom: 16px; }
+        .breadcrumb span { margin: 0 3px; }
+        .breadcrumb .current { color: #909399; }
+        
+        .assign-container { display: flex; gap: 16px; }
+        
+        .company-list { width: 300px; background: #eef1f6; border: 1px solid #dcdfe6; border-radius: 4px; padding: 8px; }
+        .company-item { padding: 10px 12px; background: #fff; border-bottom: 1px solid #e8e8e8; cursor: pointer; transition: all 0.2s; font-size: 12px; }
+        .company-item:last-child { border-bottom: none; }
+        .company-item:hover { background: #e6f7ff; }
+        .company-item.active { background: #e6f7ff; color: #1890ff; }
+        
+        .assign-content { flex: 1; display: flex; flex-direction: column; gap: 16px; }
+        .assign-header { display: flex; justify-content: space-between; align-items: center; }
+        .assign-header h4 { font-size: 14px; font-weight: 500; color: #303133; }
+        .assign-buttons { display: flex; gap: 8px; }
+        
+        .btn { height: 32px; padding: 0 16px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .btn:hover { color: #1890ff; border-color: #1890ff; }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; color: #fff; }
+        .btn-danger { color: #f56c6c; border-color: #fbc4c4; background: #fef0f0; }
+        .btn-danger:hover { color: #fff; background: #f56c6c; border-color: #f56c6c; }
+        .btn-link { border: none; background: none; color: #1890ff; padding: 0 5px; }
+        .btn-link:hover { color: #40a9ff; }
+        
+        .table-container { overflow-x: auto; border: 1px solid #dcdfe6; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8e8e8; }
+        th { background: #fafafa; font-weight: 600; color: #303133; }
+        td { color: #606266; }
+        tbody tr:hover { background: #f5f7fa; }
+        .order-no { color: #1890ff; cursor: pointer; }
+        
+        .empty-state { text-align: center; padding: 30px; color: #909399; }
+        
+        .menu-group .menu-item { justify-content: space-between; }
+        .menu-group-content { display: none; }
+        .menu-group.open .menu-group-content { display: block; }
+        .menu-group.open .menu-arrow { transform: rotate(180deg); }
+        
+        .side-panel { position: fixed; right: -600px; top: 0; width: 600px; height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s; display: flex; flex-direction: column; }
+        .side-panel.open { right: 0; }
+        .panel-header { padding: 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h3 { font-size: 16px; font-weight: 600; color: #303133; }
+        .close-panel { background: none; border: none; font-size: 20px; cursor: pointer; color: #909399; padding: 4px; }
+        .close-panel:hover { color: #303133; }
+        .panel-body { flex: 1; padding: 16px; overflow-y: auto; }
+        .panel-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; background: #f5f5f5; }
+        
+        .panel-table-container { border: 1px solid #dcdfe6; border-radius: 4px; overflow-x: auto; }
+        .panel-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        .panel-table th, .panel-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e8e8e8; }
+        .panel-table th { background: #fafafa; font-weight: 600; color: #303133; }
+        
+        .panel-pagination { padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: #606266; }
+        .pagination-right { display: flex; align-items: center; gap: 8px; }
+        .page-btn { width: 28px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .page-btn:hover { color: #1890ff; border-color: #1890ff; }
+        .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .page-select { padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; }
+        .page-jump { display: flex; align-items: center; gap: 6px; }
+        .page-jump input { width: 44px; padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 12px; }
+        
+        .checkbox { width: 14px; height: 14px; cursor: pointer; }
+        
+        .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: none; z-index: 1000; }
+        .panel-overlay.active { display: block; }
+        
+        .loading { text-align: center; padding: 40px; color: #909399; }
+        .loading-spinner { border: 2px solid #f3f3f3; border-top: 2px solid #1890ff; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🚚</div>
+                <span class="sidebar-title">厂内物流调度系统</span>
+            </div>
+            <nav class="menu">
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>工作台</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📓</span>
+                        <span>基础管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('7_1.html')">
+                            <span>📄</span>
+                            <span>公司管理</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_2.html')">
+                            <span>🚗</span>
+                            <span>车辆管理</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_3.html')">
+                            <span>👥</span>
+                            <span>装卸队伍</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_4.html')">
+                            <span>👤</span>
+                            <span>装卸人员</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_5.html')">
+                            <span>📅</span>
+                            <span>排班计划</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>计划单管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('8_1.html')">
+                            <span>📥</span>
+                            <span>入库计划</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('8_2.html')">
+                            <span>📤</span>
+                            <span>出库计划</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>分派管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('9_1.html')">
+                            <span>🏢</span>
+                            <span>物流公司指派</span>
+                        </div>
+                        <div class="menu-item active">
+                            <span>🚗</span>
+                            <span>车辆指派</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('9_3.html')">
+                            <span>👥</span>
+                            <span>装卸队指派</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📅</span>
+                        <span>预约管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item">
+                            <span>🚗</span>
+                            <span>车辆预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📥</span>
+                            <span>入库预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📤</span>
+                            <span>出库预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📋</span>
+                            <span>预约管理</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-box">
+                    <span style="color: #909399; font-size: 13px;">菜单搜索</span>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="card">
+                    <div class="breadcrumb">
+                        分派管理
+                        <span>/</span>
+                        <span class="current">车辆指派</span>
+                    </div>
+
+                    <div class="assign-container">
+                        <div class="company-list" id="companyList">
+                            <!-- 物流公司列表会被JavaScript填充 -->
+                        </div>
+
+                        <div class="assign-content">
+                            <div class="assign-header">
+                                <h4 id="selectedCompanyName">当前选择：</h4>
+                                <div class="assign-buttons">
+                                    <button class="btn btn-primary" onclick="openInboundPanel()">
+                                        <span>📥</span>
+                                        指派出库单
+                                    </button>
+                                    <button class="btn btn-primary" onclick="openOutboundPanel()">
+                                        <span>📤</span>
+                                        指派入库单
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>订单</th>
+                                            <th>类型</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="assignedOrders">
+                                        <!-- 已指派订单列表会被JavaScript填充 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- 指派入库单/出库单的侧边面板 -->
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <h3 id="panelTitle">入库计划单选择-添加</h3>
+            <button class="close-panel" onclick="closePanel()">×</button>
+        </div>
+        <div class="panel-body">
+            <div class="panel-table-container">
+                <table class="panel-table" id="orderSelectTable">
+                    <!-- 表格内容会被JavaScript填充 -->
+                </table>
+            </div>
+            <div class="panel-pagination">
+                <div class="pagination-left">
+                    共 <span id="panelTotalCount">0</span> 条
+                    <select class="page-select" id="panelPageSize" onchange="changePanelPageSize()">
+                        <option value="10">10条/页</option>
+                        <option value="20" selected>20条/页</option>
+                        <option value="50">50条/页</option>
+                    </select>
+                </div>
+                <div class="pagination-right">
+                    <button class="page-btn" id="panelPrevBtn" onclick="prevPanelPage()" disabled>◀</button>
+                    <button class="page-btn active" id="panelPage1">1</button>
+                    <button class="page-btn" id="panelNextBtn" onclick="nextPanelPage()">▶</button>
+                    <div class="page-jump">
+                        前往
+                        <input type="number" id="panelJumpPage" min="1" value="1">
+                        页
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <button class="btn btn-primary" onclick="confirmAssign()">
+                <span>✓</span>
+                确定
+            </button>
+            <button class="btn" onclick="closePanel()">
+                <span>⊗</span>
+                取消
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // 车辆数据
+        const vehicles = [
+            { id: 1, plate: '京A15489', company: '京东物流成都分公司', type: '半挂车', phone: '010-98765432' },
+            { id: 2, plate: '苏D89012', company: '京东物流成都分公司', type: '特种车', phone: '18708101718' },
+            { id: 3, plate: '湘C-V9012', company: '京东物流成都分公司', type: '危险品车', phone: '0731-23456789' },
+            { id: 4, plate: '粤C34567', company: '全球通物流有限公司', type: '冷藏车', phone: '022-87654321' },
+            { id: 5, plate: '闽E-R7890', company: '全球通物流有限公司', type: '平板车', phone: '0592-45678901' },
+            { id: 6, plate: '豫B-X567', company: '通达货运有限公司', type: '冷藏车', phone: '0371-87654321' },
+            { id: 7, plate: '沪B67890', company: '速达物流有限公司', type: '厢式货车', phone: '021-54321098' },
+            { id: 8, plate: '浙E54321', company: '邮政物流公司', type: '危险品车', phone: '024-34567890' },
+            { id: 9, plate: '川A98989', company: '顺丰物流成都分公司', type: '货车', phone: '18708941326' },
+            { id: 10, plate: '鲁A-Z1234', company: '顺丰物流成都分公司', type: '集装箱车', phone: '0531-12345678' }
+        ];
+
+        // 已指派的订单数据
+        let assignedOrders = {};
+
+        // 当前选中的车辆
+        let selectedVehicleId = 1;
+
+        // 当前面板类型：inbound/outbound
+        let currentPanelType = 'inbound';
+
+        // 入库计划数据（从8_1.html复制）
+        const inboundOrders = [
+            { id: 1, orderNo: 'IMP20250619-0001', customer: '蓝海科技有限公司', customerOrderNo: 'OD123456', supplier: '速达物流有限公司', platform: '1号月台', storage: '冻库01', cost: 500, date: '2025-06-19' },
+            { id: 2, orderNo: 'IMP20250619-0002', customer: '绿野仙踪农业发展有限公司', customerOrderNo: 'OD654321', supplier: '顺风快运有限公司', platform: '1号月台', storage: '冻库01', cost: 800, date: '2025-06-18' },
+            { id: 3, orderNo: 'IMP20250619-0004', customer: '银月贸易有限公司', customerOrderNo: 'OD246810', supplier: '全球通物流有限公司', platform: '3号月台', storage: '8号库', cost: 1200, date: '2024-11-14' },
+            { id: 4, orderNo: 'IMP20250619-0005', customer: '红星教育咨询有限公司', customerOrderNo: 'OD135792', supplier: '捷运物流有限公司', platform: '2号月台', storage: '7号库', cost: 1000, date: '2025-03-12' },
+            { id: 5, orderNo: 'IMP20250619-0003', customer: '金石建筑有限公司', customerOrderNo: 'OD987654', supplier: '通达货运有限公司', platform: '2号月台', storage: '7号库', cost: 900, date: '2024-04-18' }
+        ];
+
+        // 出库计划数据（从8_2.html复制）
+        const outboundOrders = [
+            { id: 1, orderNo: 'OMP20221202-0001', customer: '成都达成', receiverName: '李四', receiverPhone: '18421868', receiverAddress: '成都', platform: '3号月台', cost: 200, deliveryDate: '2022-12-10' },
+            { id: 2, orderNo: 'OMP20221202-0002', customer: '成都胡莱集团', receiverName: '黄晓明', receiverPhone: '1870653256', receiverAddress: '成都', platform: '1号月台', cost: 2000, deliveryDate: '2022-12-10' }
+        ];
+
+        // 面板分页相关
+        let panelCurrentPage = 1;
+        let panelPageSize = 20;
+        let selectedOrderIds = new Set();
+
+        function init() {
+            renderVehicleList();
+            selectVehicle(1);
+        }
+
+        function renderVehicleList() {
+            const list = document.getElementById('companyList');
+            list.innerHTML = vehicles.map(vehicle => `
+                <div class="company-item ${vehicle.id === selectedVehicleId ? 'active' : ''}" onclick="selectVehicle(${vehicle.id})">
+                    ${vehicle.plate}/${vehicle.type}
+                </div>
+            `).join('');
+        }
+
+        function selectVehicle(vehicleId) {
+            selectedVehicleId = vehicleId;
+            const vehicle = vehicles.find(v => v.id === vehicleId);
+            document.getElementById('selectedCompanyName').textContent = '当前选择：' + (vehicle ? vehicle.plate : '');
+            renderVehicleList();
+            renderAssignedOrders();
+        }
+
+        function renderAssignedOrders() {
+            const tbody = document.getElementById('assignedOrders');
+            const orders = assignedOrders[selectedVehicleId] || [];
+
+            if (orders.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="empty-state">暂无数据</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = orders.map(order => `
+                <tr>
+                    <td><span class="order-no">${order.orderNo}</span></td>
+                    <td>${order.type === 'inbound' ? '入库单' : '出库单'}</td>
+                    <td>
+                        <button class="btn btn-link" style="color: #f56c6c;" onclick="removeAssign(${order.id}, '${order.type}')">
+                            🗑️ 取消
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function openInboundPanel() {
+            currentPanelType = 'inbound';
+            document.getElementById('panelTitle').textContent = '入库计划单选择-添加';
+            renderPanelOrders();
+            document.getElementById('panelOverlay').classList.add('active');
+            document.getElementById('sidePanel').classList.add('open');
+        }
+
+        function openOutboundPanel() {
+            currentPanelType = 'outbound';
+            document.getElementById('panelTitle').textContent = '出库计划单选择-添加';
+            renderPanelOrders();
+            document.getElementById('panelOverlay').classList.add('active');
+            document.getElementById('sidePanel').classList.add('open');
+        }
+
+        function renderPanelOrders() {
+            const table = document.getElementById('orderSelectTable');
+            let orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
+
+            // 排除已指派的订单
+            const assigned = assignedOrders[selectedVehicleId] || [];
+            const assignedIds = new Set(assigned.map(a => a.id));
+            orders = orders.filter(o => !assignedIds.has(o.id));
+
+            if (orders.length === 0) {
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>${currentPanelType === 'inbound' ? '入库计划单号' : '出库计划单号'}</th>
+                            <th>${currentPanelType === 'inbound' ? '客户编码' : '客户'}</th>
+                            <th>${currentPanelType === 'inbound' ? '客户订单号' : '收货人'}</th>
+                            <th>${currentPanelType === 'inbound' ? '供应商编码' : '收货人电话'}</th>
+                            <th>${currentPanelType === 'inbound' ? '供应商名称' : '收货人地址'}</th>
+                            <th>月台</th>
+                            <th>${currentPanelType === 'inbound' ? '仓储' : '费用(元)'}</th>
+                            <th>费用(元)</th>
+                            <th>${currentPanelType === 'inbound' ? '预计到货时间' : '计划交货时间'}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td colspan="10" class="empty-state">暂无数据</td>
+                        </tr>
+                    </tbody>
+                `;
+                updatePanelPagination(0);
+                return;
+            }
+
+            // 分页
+            const start = (panelCurrentPage - 1) * panelPageSize;
+            const end = start + panelPageSize;
+            const pageData = orders.slice(start, end);
+
+            if (currentPanelType === 'inbound') {
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" class="checkbox" id="selectAllPanel" onchange="toggleSelectAllPanel()"></th>
+                            <th>入库计划单号</th>
+                            <th>客户编码</th>
+                            <th>客户订单号</th>
+                            <th>供应商编码</th>
+                            <th>供应商名称</th>
+                            <th>月台</th>
+                            <th>仓储</th>
+                            <th>费用(元)</th>
+                            <th>预计到货时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pageData.map(order => `
+                            <tr>
+                                <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedOrderIds.has(order.id) ? 'checked' : ''} onchange="toggleSelectPanel(${order.id})"></td>
+                                <td><span class="order-no">${order.orderNo}</span></td>
+                                <td>${order.customer}</td>
+                                <td>${order.customerOrderNo}</td>
+                                <td></td>
+                                <td>${order.supplier}</td>
+                                <td>${order.platform}</td>
+                                <td>${order.storage}</td>
+                                <td>${order.cost}</td>
+                                <td>${order.date}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            } else {
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" class="checkbox" id="selectAllPanel" onchange="toggleSelectAllPanel()"></th>
+                            <th>出库计划单号</th>
+                            <th>客户</th>
+                            <th>收货人</th>
+                            <th>收货人电话</th>
+                            <th>收货人地址</th>
+                            <th>发货月台</th>
+                            <th>费用(元)</th>
+                            <th>计划交货时间</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${pageData.map(order => `
+                            <tr>
+                                <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedOrderIds.has(order.id) ? 'checked' : ''} onchange="toggleSelectPanel(${order.id})"></td>
+                                <td><span class="order-no">${order.orderNo}</span></td>
+                                <td>${order.customer}</td>
+                                <td>${order.receiverName}</td>
+                                <td>${order.receiverPhone}</td>
+                                <td>${order.receiverAddress}</td>
+                                <td>${order.platform}</td>
+                                <td>${order.cost}</td>
+                                <td>${order.deliveryDate}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                `;
+            }
+
+            updatePanelPagination(orders.length);
+        }
+
+        function updatePanelPagination(total) {
+            document.getElementById('panelTotalCount').textContent = total;
+            const totalPages = Math.ceil(total / panelPageSize) || 1;
+            document.getElementById('panelPrevBtn').disabled = panelCurrentPage <= 1;
+            document.getElementById('panelNextBtn').disabled = panelCurrentPage >= totalPages;
+        }
+
+        function toggleSelectPanel(orderId) {
+            if (selectedOrderIds.has(orderId)) {
+                selectedOrderIds.delete(orderId);
+            } else {
+                selectedOrderIds.add(orderId);
+            }
+        }
+
+        function toggleSelectAllPanel() {
+            const selectAll = document.getElementById('selectAllPanel').checked;
+            const orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
+            const start = (panelCurrentPage - 1) * panelPageSize;
+            const end = start + panelPageSize;
+            const pageData = orders.slice(start, end);
+
+            if (selectAll) {
+                pageData.forEach(o => selectedOrderIds.add(o.id));
+            } else {
+                pageData.forEach(o => selectedOrderIds.delete(o.id));
+            }
+            renderPanelOrders();
+        }
+
+        function confirmAssign() {
+            if (selectedOrderIds.size === 0) {
+                alert('请先选择要指派的订单');
+                return;
+            }
+
+            const orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
+            const selectedOrders = orders.filter(o => selectedOrderIds.has(o.id));
+
+            if (!assignedOrders[selectedVehicleId]) {
+                assignedOrders[selectedVehicleId] = [];
+            }
+
+            selectedOrders.forEach(order => {
+                assignedOrders[selectedVehicleId].push({
+                    id: order.id,
+                    orderNo: order.orderNo,
+                    type: currentPanelType
+                });
+            });
+
+            selectedOrderIds.clear();
+            closePanel();
+            renderAssignedOrders();
+        }
+
+        function removeAssign(orderId, type) {
+            if (!confirm('确定要取消该指派吗？')) {
+                return;
+            }
+
+            const orders = assignedOrders[selectedVehicleId];
+            if (orders) {
+                assignedOrders[selectedVehicleId] = orders.filter(o => !(o.id === orderId && o.type === type));
+                renderAssignedOrders();
+            }
+        }
+
+        function closePanel() {
+            document.getElementById('panelOverlay').classList.remove('active');
+            document.getElementById('sidePanel').classList.remove('open');
+            selectedOrderIds.clear();
+            panelCurrentPage = 1;
+        }
+
+        function prevPanelPage() {
+            if (panelCurrentPage > 1) {
+                panelCurrentPage--;
+                renderPanelOrders();
+            }
+        }
+
+        function nextPanelPage() {
+            const orders = currentPanelType === 'inbound' ? inboundOrders : outboundOrders;
+            const totalPages = Math.ceil(orders.length / panelPageSize);
+            if (panelCurrentPage < totalPages) {
+                panelCurrentPage++;
+                renderPanelOrders();
+            }
+        }
+
+        function changePanelPageSize() {
+            panelPageSize = parseInt(document.getElementById('panelPageSize').value);
+            panelCurrentPage = 1;
+            renderPanelOrders();
+        }
+
+        function toggleMenu(el) {
+            const group = el.parentElement;
+            group.classList.toggle('open');
+        }
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
