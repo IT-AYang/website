@@ -87,28 +87,28 @@
     <!-- 应用卡片容器 -->
     <div class="app-container">
         <!-- 园区月台管理看板 -->
-        <div class="app-card" onclick="window.location.href='1.html'">
+        <div class="app-card" onclick="window.open('1.html', '_blank')">
             <div class="tag">上架</div>
             <div class="app-icon icon-1"></div>
             <div class="app-name">园区月台管理看板</div>
         </div>
 
         <!-- 厂内物流调度看板 -->
-        <div class="app-card">
+        <div class="app-card" onclick="window.open('2.html', '_blank')">
             <div class="tag">上架</div>
             <div class="app-icon icon-2"></div>
             <div class="app-name">厂内物流调度看板</div>
         </div>
 
         <!-- 仓储集中管控中心大屏 -->
-        <div class="app-card">
+        <div class="app-card" onclick="window.open('3.html', '_blank')">
             <div class="tag">上架</div>
             <div class="app-icon icon-3"></div>
             <div class="app-name">仓储集中管控中心大屏</div>
         </div>
 
         <!-- 物流拉动分拣系统 -->
-        <div class="app-card">
+        <div class="app-card" onclick="window.open('4.html', '_blank')">
             <div class="tag">上架</div>
             <div class="app-icon icon-4"></div>
             <div class="app-name">物流拉动分拣系统</div>
@@ -135,20 +135,5 @@
             <div class="app-name">厂内物流调度系统</div>
         </div>
     </div>
-
-    <script>
-        const appCards = document.querySelectorAll('.app-card');
-        appCards.forEach(card => {
-            card.addEventListener('click', function(e) {
-                if (e.target.closest('div[onclick]')) return;
-                const appName = this.querySelector('.app-name').textContent;
-                if (appName === '园区月台管理看板') {
-                    window.location.href = 'platform-dashboard.html';
-                } else {
-                    alert(`即将跳转到【${appName}】系统`);
-                }
-            });
-        });
-    </script>
 </body>
 </html>
