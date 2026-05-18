@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>车辆管理</title>
+    <title>装卸队伍</title>
     <style>
         * {
             margin: 0;
@@ -175,19 +175,17 @@
             border-radius: 4px 0 0 4px;
         }
 
-        .search-item input,
-        .search-item select {
+        .search-item input {
             height: 40px;
             padding: 8px 12px;
             border: 1px solid #e4e7ed;
             border-radius: 0 4px 4px 0;
             font-size: 14px;
             outline: none;
-            min-width: 200px;
+            min-width: 250px;
         }
 
-        .search-item input:focus,
-        .search-item select:focus {
+        .search-item input:focus {
             border-color: #1890ff;
         }
 
@@ -288,7 +286,7 @@
             background: #f5f7fa;
         }
 
-        .vehicle-plate {
+        .team-name {
             color: #1890ff;
             cursor: pointer;
         }
@@ -388,7 +386,7 @@
         .modal {
             background: #fff;
             border-radius: 4px;
-            width: 700px;
+            width: 500px;
             max-width: 90%;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
@@ -451,9 +449,9 @@
         }
 
         .form-item input,
-        .form-item select {
+        .form-item select,
+        .form-item textarea {
             width: 100%;
-            height: 40px;
             padding: 8px 12px;
             border: 1px solid #dcdfe6;
             border-radius: 4px;
@@ -461,8 +459,14 @@
             outline: none;
         }
 
+        .form-item textarea {
+            height: 80px;
+            resize: vertical;
+        }
+
         .form-item input:focus,
-        .form-item select:focus {
+        .form-item select:focus,
+        .form-item textarea:focus {
             border-color: #1890ff;
         }
 
@@ -517,11 +521,11 @@
                             <span>📄</span>
                             <span>公司管理</span>
                         </div>
-                        <div class="menu-item active">
+                        <div class="menu-item" onclick="navigateTo('7_2.html')">
                             <span>🚗</span>
                             <span>车辆管理</span>
                         </div>
-                        <div class="menu-item" onclick="navigateTo('7_3.html')">
+                        <div class="menu-item active">
                             <span>👥</span>
                             <span>装卸队伍</span>
                         </div>
@@ -613,37 +617,20 @@
                     <div class="breadcrumb">
                         基础管理
                         <span>/</span>
-                        <span class="current">车辆管理</span>
+                        <span class="current">装卸队伍</span>
                     </div>
 
                     <div class="search-bar">
                         <div class="search-item">
-                            <label>所属公司</label>
-                            <select id="searchCompany">
-                                <option value="">请选择</option>
-                                <option value="京东物流成都分公司">京东物流成都分公司</option>
-                                <option value="全球通物流有限公司">全球通物流有限公司</option>
-                                <option value="通达货运有限公司">通达货运有限公司</option>
-                                <option value="速达物流有限公司">速达物流有限公司</option>
-                                <option value="邮政物流公司">邮政物流公司</option>
-                                <option value="顺丰物流成都分公司">顺丰物流成都分公司</option>
-                            </select>
+                            <label>队伍名称</label>
+                            <input type="text" id="searchName" placeholder="请输入队伍名称">
                         </div>
                         <div class="search-item">
-                            <label>车牌</label>
-                            <input type="text" id="searchPlate" placeholder="请输入车牌">
-                        </div>
-                        <div class="search-item">
-                            <label>牵引</label>
-                            <select id="searchTraction">
-                                <option value="">请输入牵引</option>
-                                <option value="半挂车">半挂车</option>
-                                <option value="全挂车">全挂车</option>
-                                <option value="中轴挂车">中轴挂车</option>
-                            </select>
+                            <label>类型</label>
+                            <input type="text" id="searchType" placeholder="请输入类型">
                         </div>
                         <div class="search-btns">
-                            <button class="btn btn-primary" onclick="searchVehicles()">
+                            <button class="btn btn-primary" onclick="searchTeams()">
                                 <span>🔍</span>
                                 查询
                             </button>
@@ -666,21 +653,15 @@
                     </div>
 
                     <div class="table-container">
-                        <table id="vehicleTable">
+                        <table id="teamTable">
                             <thead>
                                 <tr>
                                     <th><input type="checkbox" class="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                                    <th>车牌</th>
-                                    <th>所属公司</th>
-                                    <th>车型</th>
-                                    <th>牵引</th>
-                                    <th>车辆载重(吨)</th>
-                                    <th>车辆重量(吨)</th>
-                                    <th>车长(m)</th>
-                                    <th>车宽(m)</th>
-                                    <th>车高(m)</th>
+                                    <th>队伍名称</th>
+                                    <th>类型</th>
+                                    <th>责任人</th>
                                     <th>联系电话</th>
-                                    <th>类别</th>
+                                    <th>备注</th>
                                     <th>操作</th>
                                 </tr>
                             </thead>
@@ -718,162 +699,94 @@
     <div class="modal-overlay" id="modalOverlay">
         <div class="modal">
             <div class="modal-header">
-                <h3 id="modalTitle">录入车辆</h3>
+                <h3 id="modalTitle">录入队伍</h3>
                 <button class="close-btn" onclick="closeModal()">×</button>
             </div>
             <div class="modal-body">
-                <form id="vehicleForm">
-                    <input type="hidden" id="vehicleId">
+                <form id="teamForm">
+                    <input type="hidden" id="teamId">
                     <div class="form-row">
                         <div class="form-item">
-                            <label><span class="required">*</span>车牌</label>
-                            <input type="text" id="vehiclePlate" placeholder="请输入车牌">
+                            <label><span class="required">*</span>队伍名称</label>
+                            <input type="text" id="teamName" placeholder="请输入队伍名称">
                         </div>
                         <div class="form-item">
-                            <label><span class="required">*</span>所属公司</label>
-                            <select id="vehicleCompany">
-                                <option value="">请选择公司</option>
-                                <option value="京东物流成都分公司">京东物流成都分公司</option>
-                                <option value="全球通物流有限公司">全球通物流有限公司</option>
-                                <option value="通达货运有限公司">通达货运有限公司</option>
-                                <option value="速达物流有限公司">速达物流有限公司</option>
-                                <option value="邮政物流公司">邮政物流公司</option>
-                                <option value="顺丰物流成都分公司">顺丰物流成都分公司</option>
+                            <label><span class="required">*</span>类型</label>
+                            <select id="teamType">
+                                <option value="">请选择类型</option>
+                                <option value="叉车">叉车</option>
+                                <option value="搬运">搬运</option>
+                                <option value="车队">车队</option>
+                                <option value="铲车">铲车</option>
+                                <option value="其他">其他</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-item">
-                            <label><span class="required">*</span>车型</label>
-                            <select id="vehicleType">
-                                <option value="">请选择车型</option>
-                                <option value="半挂车">半挂车</option>
-                                <option value="特种车">特种车</option>
-                                <option value="危险品车">危险品车</option>
-                                <option value="冷藏车">冷藏车</option>
-                                <option value="平板车">平板车</option>
-                                <option value="厢式货车">厢式货车</option>
-                                <option value="货车">货车</option>
-                                <option value="集装箱车">集装箱车</option>
-                            </select>
+                            <label><span class="required">*</span>责任人</label>
+                            <input type="text" id="teamLeader" placeholder="请输入责任人">
                         </div>
                         <div class="form-item">
-                            <label><span class="required">*</span>牵引</label>
-                            <select id="vehicleTraction">
-                                <option value="">请选择牵引类型</option>
-                                <option value="半挂车">半挂车</option>
-                                <option value="全挂车">全挂车</option>
-                                <option value="中轴挂车">中轴挂车</option>
-                            </select>
+                            <label><span class="required">*</span>联系电话</label>
+                            <input type="text" id="teamPhone" placeholder="请输入联系电话">
                         </div>
                     </div>
                     <div class="form-row">
-                        <div class="form-item">
-                            <label>车辆载重(吨)</label>
-                            <input type="text" id="vehicleLoad" placeholder="请输入车辆载重">
-                        </div>
-                        <div class="form-item">
-                            <label>车辆重量(吨)</label>
-                            <input type="text" id="vehicleWeight" placeholder="请输入车辆重量">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-item">
-                            <label>车长(m)</label>
-                            <input type="text" id="vehicleLength" placeholder="请输入车长">
-                        </div>
-                        <div class="form-item">
-                            <label>车宽(m)</label>
-                            <input type="text" id="vehicleWidth" placeholder="请输入车宽">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-item">
-                            <label>车高(m)</label>
-                            <input type="text" id="vehicleHeight" placeholder="请输入车高">
-                        </div>
-                        <div class="form-item">
-                            <label>联系电话</label>
-                            <input type="text" id="vehiclePhone" placeholder="请输入联系电话">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-item">
-                            <label><span class="required">*</span>类别</label>
-                            <select id="vehicleCategory">
-                                <option value="">请选择类别</option>
-                                <option value="园内车辆">园内车辆</option>
-                                <option value="园外车辆">园外车辆</option>
-                            </select>
+                        <div class="form-item full">
+                            <label>备注</label>
+                            <textarea id="teamRemark" placeholder="请输入备注"></textarea>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button class="btn" onclick="closeModal()">取消</button>
-                <button class="btn btn-primary" onclick="saveVehicle()">确定</button>
+                <button class="btn btn-primary" onclick="saveTeam()">确定</button>
             </div>
         </div>
     </div>
 
     <script>
-        const defaultVehicles = [
-            { id: 1, plate: '京A15489', company: '京东物流成都分公司', type: '半挂车', traction: '半挂车', load: 2.5, weight: 2, length: 17.5, width: 2, height: 3.5, phone: '010-98765432', category: '园内车辆' },
-            { id: 2, plate: '苏D89012', company: '京东物流成都分公司', type: '特种车', traction: '半挂车', load: 8, weight: 10, length: 8.5, width: 2.2, height: 3, phone: '18708101718', category: '园内车辆' },
-            { id: 3, plate: '苏D89012', company: '京东物流成都分公司', type: '特种车', traction: '半挂车', load: 8, weight: 10, length: 8.5, width: 2.2, height: 3, phone: '18708101718', category: '园内车辆' },
-            { id: 4, plate: '湘C-V9012', company: '京东物流成都分公司', type: '危险品车', traction: '全挂车', load: 25, weight: 18, length: 14.5, width: 2.6, height: 3.9, phone: '0731-23456789', category: '园内车辆' },
-            { id: 5, plate: '粤C34567', company: '全球通物流有限公司', type: '冷藏车', traction: '中轴挂车', load: 20, weight: 12, length: 12, width: 2.5, height: 3.5, phone: '022-87654321', category: '园内车辆' },
-            { id: 6, plate: '粤C34567', company: '全球通物流有限公司', type: '冷藏车', traction: '中轴挂车', load: 20, weight: 12, length: 12, width: 2.5, height: 3.5, phone: '022-87654321', category: '园内车辆' },
-            { id: 7, plate: '闽E-R7890', company: '全球通物流有限公司', type: '平板车', traction: '全挂车', load: 40, weight: 15, length: 17, width: 2.7, height: 3.5, phone: '0592-45678901', category: '园内车辆' },
-            { id: 8, plate: '豫B-X567', company: '通达货运有限公司', type: '冷藏车', traction: '全挂车', load: 15, weight: 10, length: 12, width: 2.4, height: 3, phone: '0371-87654321', category: '园外车辆' },
-            { id: 9, plate: '沪B67890', company: '速达物流有限公司', type: '厢式货车', traction: '半挂车', load: 10, weight: 8, length: 9.6, width: 2.4, height: 3, phone: '021-54321098', category: '园内车辆' },
-            { id: 10, plate: '沪B34592', company: '速达物流有限公司', type: '厢式货车', traction: '半挂车', load: 20.5, weight: 10, length: 5, width: 2, height: 3, phone: '18708101718', category: '园内车辆' },
-            { id: 11, plate: '浙E54321', company: '邮政物流公司', type: '危险品车', traction: '半挂车', load: 30, weight: 18, length: 16, width: 2.6, height: 3.7, phone: '024-34567890', category: '园内车辆' },
-            { id: 12, plate: '皖D-T3456', company: '邮政物流公司', type: '厢式货车', traction: '半挂车', load: 10, weight: 8, length: 9.5, width: 2.3, height: 3, phone: '0551-34567890', category: '园内车辆' },
-            { id: 13, plate: '川A98989', company: '顺丰物流成都分公司', type: '货车', traction: '半挂车', load: 20, weight: 10, length: 10, width: 2.5, height: 3.5, phone: '18708941326', category: '园外车辆' },
-            { id: 14, plate: '鲁A-Z1234', company: '顺丰物流成都分公司', type: '集装箱车', traction: '中轴挂车', load: 35, weight: 20, length: 16, width: 2.5, height: 4, phone: '0531-12345678', category: '园内车辆' },
-            { id: 15, plate: '京B-88765', company: '京东物流成都分公司', type: '半挂车', traction: '半挂车', load: 25, weight: 12, length: 16, width: 2.6, height: 3.8, phone: '010-11112222', category: '园内车辆' },
-            { id: 16, plate: '沪C-55667', company: '全球通物流有限公司', type: '冷藏车', traction: '全挂车', load: 18, weight: 11, length: 14, width: 2.4, height: 3.2, phone: '021-22223333', category: '园外车辆' },
-            { id: 17, plate: '粤A-99887', company: '通达货运有限公司', type: '危险品车', traction: '全挂车', load: 32, weight: 20, length: 17, width: 2.8, height: 4, phone: '020-33334444', category: '园内车辆' },
-            { id: 18, plate: '苏A-11223', company: '速达物流有限公司', type: '平板车', traction: '中轴挂车', load: 45, weight: 18, length: 18, width: 2.9, height: 3.6, phone: '025-44445555', category: '园内车辆' },
-            { id: 19, plate: '浙B-55667', company: '邮政物流公司', type: '厢式货车', traction: '半挂车', load: 12, weight: 9, length: 10, width: 2.3, height: 3.1, phone: '0574-55556666', category: '园外车辆' },
-            { id: 20, plate: '川B-77889', company: '顺丰物流成都分公司', type: '货车', traction: '半挂车', load: 15, weight: 8, length: 11, width: 2.4, height: 3.3, phone: '0816-66667777', category: '园内车辆' },
-            { id: 21, plate: '渝A-33445', company: '京东物流成都分公司', type: '特种车', traction: '全挂车', load: 35, weight: 22, length: 15, width: 2.7, height: 4.2, phone: '023-77778888', category: '园内车辆' },
-            { id: 22, plate: '冀A-66778', company: '全球通物流有限公司', type: '冷藏车', traction: '半挂车', load: 16, weight: 10, length: 13, width: 2.5, height: 3.4, phone: '0311-88889999', category: '园内车辆' },
-            { id: 23, plate: '晋A-99001', company: '通达货运有限公司', type: '厢式货车', traction: '中轴挂车', load: 22, weight: 13, length: 14, width: 2.6, height: 3.5, phone: '0351-99990000', category: '园外车辆' },
-            { id: 24, plate: '辽A-22334', company: '速达物流有限公司', type: '危险品车', traction: '全挂车', load: 28, weight: 17, length: 15.5, width: 2.6, height: 3.9, phone: '024-00001111', category: '园内车辆' },
-            { id: 25, plate: '吉A-55667', company: '邮政物流公司', type: '货车', traction: '半挂车', load: 18, weight: 11, length: 12, width: 2.5, height: 3.2, phone: '0431-11112222', category: '园内车辆' },
-            { id: 26, plate: '黑A-88990', company: '顺丰物流成都分公司', type: '集装箱车', traction: '全挂车', load: 40, weight: 25, length: 17.5, width: 2.8, height: 4.1, phone: '0451-22223333', category: '园内车辆' },
-            { id: 27, plate: '苏E-11223', company: '京东物流成都分公司', type: '半挂车', traction: '半挂车', load: 20, weight: 12, length: 15, width: 2.5, height: 3.6, phone: '0512-33334444', category: '园外车辆' },
-            { id: 28, plate: '浙C-44556', company: '全球通物流有限公司', type: '平板车', traction: '中轴挂车', load: 38, weight: 16, length: 16.5, width: 2.7, height: 3.5, phone: '0577-44445555', category: '园内车辆' },
-            { id: 29, plate: '皖B-77889', company: '通达货运有限公司', type: '冷藏车', traction: '半挂车', load: 14, weight: 9, length: 11, width: 2.4, height: 3.1, phone: '0553-55556666', category: '园内车辆' },
-            { id: 30, plate: '闽A-00112', company: '速达物流有限公司', type: '厢式货车', traction: '半挂车', load: 10, weight: 8, length: 9, width: 2.2, height: 2.9, phone: '0591-66667777', category: '园内车辆' }
+        const defaultTeams = [
+            { id: 1, name: '装卸一队', type: '叉车', leader: '李世芬', phone: '13812345678', remark: '' },
+            { id: 2, name: '装卸一队', type: '叉车', leader: '李世芬', phone: '13812345678', remark: '' },
+            { id: 3, name: '装卸四队', type: '搬运', leader: '李娜', phone: '13987654321', remark: '无' },
+            { id: 4, name: '装卸五队', type: '车队', leader: '王强', phone: '13765432109', remark: '无' },
+            { id: 5, name: '装卸五队', type: '车队', leader: '王强', phone: '13765432109', remark: '无' },
+            { id: 6, name: '装卸三队', type: '其他', leader: '张千惠', phone: '18708141574', remark: '' },
+            { id: 7, name: '装卸二队', type: '铲车', leader: '李新娥', phone: '18708171819', remark: '' },
+            { id: 8, name: '装卸六队', type: '叉车', leader: '赵伟', phone: '13612345678', remark: '负责东区' },
+            { id: 9, name: '装卸七队', type: '搬运', leader: '孙丽', phone: '13587654321', remark: '负责西区' },
+            { id: 10, name: '装卸八队', type: '车队', leader: '周杰', phone: '13465432109', remark: '大型车辆队' },
+            { id: 11, name: '装卸九队', type: '铲车', leader: '吴芳', phone: '13376543210', remark: '重型设备组' },
+            { id: 12, name: '装卸十队', type: '其他', leader: '郑凯', phone: '13287654321', remark: '应急小组' }
         ];
 
-        const STORAGE_KEY = 'vehicleManagementData';
-        let vehicles = [];
+        const STORAGE_KEY = 'teamManagementData';
+        let teams = [];
         let currentPage = 1;
         let pageSize = 20;
-        let filteredVehicles = [];
+        let filteredTeams = [];
         let selectedIds = new Set();
 
-        function getVehicles() {
+        function getTeams() {
             const data = localStorage.getItem(STORAGE_KEY);
             if (data) {
                 return JSON.parse(data);
             }
-            saveVehicles(defaultVehicles);
-            return defaultVehicles;
+            saveTeams(defaultTeams);
+            return defaultTeams;
         }
 
-        function saveVehicles(data) {
+        function saveTeams(data) {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
         function init() {
             localStorage.removeItem(STORAGE_KEY);
-            vehicles = getVehicles();
-            filteredVehicles = [...vehicles];
+            teams = getTeams();
+            filteredTeams = [...teams];
             renderTable();
             updatePagination();
         }
@@ -882,12 +795,12 @@
             const tbody = document.getElementById('tableBody');
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredVehicles.slice(start, end);
+            const pageData = filteredTeams.slice(start, end);
 
             if (pageData.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="13" style="text-align: center; padding: 40px; color: #909399;">
+                        <td colspan="7" style="text-align: center; padding: 40px; color: #909399;">
                             暂无数据
                         </td>
                     </tr>
@@ -895,24 +808,19 @@
                 return;
             }
 
-            tbody.innerHTML = pageData.map(vehicle => `
+            tbody.innerHTML = pageData.map(team => `
                 <tr>
-                    <td><input type="checkbox" class="checkbox" data-id="${vehicle.id}" ${selectedIds.has(vehicle.id) ? 'checked' : ''} onchange="toggleSelect(${vehicle.id})"></td>
-                    <td><span class="vehicle-plate">${vehicle.plate}</span></td>
-                    <td>${vehicle.company || '-'}</td>
-                    <td>${vehicle.type || '-'}</td>
-                    <td>${vehicle.traction || '-'}</td>
-                    <td>${vehicle.load || '-'}</td>
-                    <td>${vehicle.weight || '-'}</td>
-                    <td>${vehicle.length || '-'}</td>
-                    <td>${vehicle.width || '-'}</td>
-                    <td>${vehicle.height || '-'}</td>
-                    <td>${vehicle.phone || '-'}</td>
-                    <td>${vehicle.category || '-'}</td>
+                    <td><input type="checkbox" class="checkbox" data-id="${team.id}" ${selectedIds.has(team.id) ? 'checked' : ''} onchange="toggleSelect(${team.id})"></td>
+                    <td><span class="team-name">${team.name}</span></td>
+                    <td>${team.type || '-'}</td>
+                    <td>${team.leader || '-'}</td>
+                    <td>${team.phone || '-'}</td>
+                    <td>${team.remark || '-'}</td>
                     <td>
                         <div class="table-actions">
-                            <button class="btn btn-link" onclick="openEditModal(${vehicle.id})">✏️ 编辑</button>
-                            <button class="btn btn-link" style="color: #f56c6c;" onclick="deleteVehicle(${vehicle.id})">🗑️ 删除</button>
+                            <button class="btn btn-link" onclick="openEditModal(${team.id})">✏️ 编辑</button>
+                            <button class="btn btn-link" onclick="manageMembers(${team.id})">👥 成员管理</button>
+                            <button class="btn btn-link" style="color: #f56c6c;" onclick="deleteTeam(${team.id})">🗑️ 删除</button>
                         </div>
                     </td>
                 </tr>
@@ -920,8 +828,8 @@
         }
 
         function updatePagination() {
-            document.getElementById('totalCount').textContent = filteredVehicles.length;
-            const totalPages = Math.ceil(filteredVehicles.length / pageSize) || 1;
+            document.getElementById('totalCount').textContent = filteredTeams.length;
+            const totalPages = Math.ceil(filteredTeams.length / pageSize) || 1;
             
             document.getElementById('prevBtn').disabled = currentPage <= 1;
             document.getElementById('nextBtn').disabled = currentPage >= totalPages;
@@ -937,29 +845,23 @@
         }
 
         function openAddModal() {
-            document.getElementById('modalTitle').textContent = '录入车辆';
-            document.getElementById('vehicleForm').reset();
-            document.getElementById('vehicleId').value = '';
+            document.getElementById('modalTitle').textContent = '录入队伍';
+            document.getElementById('teamForm').reset();
+            document.getElementById('teamId').value = '';
             document.getElementById('modalOverlay').classList.add('active');
         }
 
         function openEditModal(id) {
-            const vehicle = vehicles.find(v => v.id === id);
-            if (!vehicle) return;
+            const team = teams.find(t => t.id === id);
+            if (!team) return;
 
-            document.getElementById('modalTitle').textContent = '编辑车辆';
-            document.getElementById('vehicleId').value = vehicle.id;
-            document.getElementById('vehiclePlate').value = vehicle.plate || '';
-            document.getElementById('vehicleCompany').value = vehicle.company || '';
-            document.getElementById('vehicleType').value = vehicle.type || '';
-            document.getElementById('vehicleTraction').value = vehicle.traction || '';
-            document.getElementById('vehicleLoad').value = vehicle.load || '';
-            document.getElementById('vehicleWeight').value = vehicle.weight || '';
-            document.getElementById('vehicleLength').value = vehicle.length || '';
-            document.getElementById('vehicleWidth').value = vehicle.width || '';
-            document.getElementById('vehicleHeight').value = vehicle.height || '';
-            document.getElementById('vehiclePhone').value = vehicle.phone || '';
-            document.getElementById('vehicleCategory').value = vehicle.category || '';
+            document.getElementById('modalTitle').textContent = '编辑队伍';
+            document.getElementById('teamId').value = team.id;
+            document.getElementById('teamName').value = team.name || '';
+            document.getElementById('teamType').value = team.type || '';
+            document.getElementById('teamLeader').value = team.leader || '';
+            document.getElementById('teamPhone').value = team.phone || '';
+            document.getElementById('teamRemark').value = team.remark || '';
             document.getElementById('modalOverlay').classList.add('active');
         }
 
@@ -967,101 +869,92 @@
             document.getElementById('modalOverlay').classList.remove('active');
         }
 
-        function saveVehicle() {
-            const id = document.getElementById('vehicleId').value;
-            const plate = document.getElementById('vehiclePlate').value.trim();
-            const company = document.getElementById('vehicleCompany').value;
-            const type = document.getElementById('vehicleType').value;
-            const traction = document.getElementById('vehicleTraction').value;
-            const load = parseFloat(document.getElementById('vehicleLoad').value) || 0;
-            const weight = parseFloat(document.getElementById('vehicleWeight').value) || 0;
-            const length = parseFloat(document.getElementById('vehicleLength').value) || 0;
-            const width = parseFloat(document.getElementById('vehicleWidth').value) || 0;
-            const height = parseFloat(document.getElementById('vehicleHeight').value) || 0;
-            const phone = document.getElementById('vehiclePhone').value.trim();
-            const category = document.getElementById('vehicleCategory').value;
+        function saveTeam() {
+            const id = document.getElementById('teamId').value;
+            const name = document.getElementById('teamName').value.trim();
+            const type = document.getElementById('teamType').value;
+            const leader = document.getElementById('teamLeader').value.trim();
+            const phone = document.getElementById('teamPhone').value.trim();
+            const remark = document.getElementById('teamRemark').value.trim();
 
-            if (!plate) {
-                alert('请输入车牌');
-                return;
-            }
-            if (!company) {
-                alert('请选择所属公司');
+            if (!name) {
+                alert('请输入队伍名称');
                 return;
             }
             if (!type) {
-                alert('请选择车型');
+                alert('请选择类型');
+                return;
+            }
+            if (!leader) {
+                alert('请输入责任人');
+                return;
+            }
+            if (!phone) {
+                alert('请输入联系电话');
                 return;
             }
 
             if (id) {
-                const index = vehicles.findIndex(v => v.id === parseInt(id));
+                const index = teams.findIndex(t => t.id === parseInt(id));
                 if (index !== -1) {
-                    vehicles[index] = {
-                        ...vehicles[index],
-                        plate,
-                        company,
+                    teams[index] = {
+                        ...teams[index],
+                        name,
                         type,
-                        traction,
-                        load,
-                        weight,
-                        length,
-                        width,
-                        height,
+                        leader,
                         phone,
-                        category
+                        remark
                     };
                 }
             } else {
-                const maxId = vehicles.length > 0 ? Math.max(...vehicles.map(v => v.id)) : 0;
-                vehicles.push({
+                const maxId = teams.length > 0 ? Math.max(...teams.map(t => t.id)) : 0;
+                teams.push({
                     id: maxId + 1,
-                    plate,
-                    company,
+                    name,
                     type,
-                    traction,
-                    load,
-                    weight,
-                    length,
-                    width,
-                    height,
+                    leader,
                     phone,
-                    category
+                    remark
                 });
             }
 
-            saveVehicles(vehicles);
-            filteredVehicles = [...vehicles];
-            searchVehicles();
+            saveTeams(teams);
+            filteredTeams = [...teams];
+            searchTeams();
             closeModal();
         }
 
-        function deleteVehicle(id) {
-            if (!confirm('确定要删除该车辆吗？')) {
+        function deleteTeam(id) {
+            if (!confirm('确定要删除该队伍吗？')) {
                 return;
             }
-            vehicles = vehicles.filter(v => v.id !== id);
-            saveVehicles(vehicles);
-            filteredVehicles = filteredVehicles.filter(v => v.id !== id);
+            teams = teams.filter(t => t.id !== id);
+            saveTeams(teams);
+            filteredTeams = filteredTeams.filter(t => t.id !== id);
             renderTable();
             updatePagination();
         }
 
         function batchDelete() {
             if (selectedIds.size === 0) {
-                alert('请先选择要删除的车辆');
+                alert('请先选择要删除的队伍');
                 return;
             }
             if (!confirm(`确定要删除选中的 ${selectedIds.size} 条记录吗？`)) {
                 return;
             }
-            vehicles = vehicles.filter(v => !selectedIds.has(v.id));
-            saveVehicles(vehicles);
-            filteredVehicles = filteredVehicles.filter(v => !selectedIds.has(v.id));
+            teams = teams.filter(t => !selectedIds.has(t.id));
+            saveTeams(teams);
+            filteredTeams = filteredTeams.filter(t => !selectedIds.has(t.id));
             selectedIds.clear();
             document.getElementById('selectAll').checked = false;
             renderTable();
             updatePagination();
+        }
+
+        function manageMembers(id) {
+            const team = teams.find(t => t.id === id);
+            alert(`成员管理功能：${team?.name || '该队伍'}的成员列表`);
         }
 
         function toggleSelect(id) {
@@ -1077,12 +970,12 @@
             const selectAll = document.getElementById('selectAll').checked;
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredVehicles.slice(start, end);
+            const pageData = filteredTeams.slice(start, end);
             
             if (selectAll) {
-                pageData.forEach(v => selectedIds.add(v.id));
+                pageData.forEach(t => selectedIds.add(t.id));
             } else {
-                pageData.forEach(v => selectedIds.delete(v.id));
+                pageData.forEach(t => selectedIds.delete(t.id));
             }
             renderTable();
         }
@@ -1090,22 +983,20 @@
         function updateSelectAll() {
             const start = (currentPage - 1) * pageSize;
             const end = start + pageSize;
-            const pageData = filteredVehicles.slice(start, end);
+            const pageData = filteredTeams.slice(start, end);
             
-            const allSelected = pageData.length > 0 && pageData.every(v => selectedIds.has(v.id));
+            const allSelected = pageData.length > 0 && pageData.every(t => selectedIds.has(t.id));
             document.getElementById('selectAll').checked = allSelected;
         }
 
-        function searchVehicles() {
-            const company = document.getElementById('searchCompany').value;
-            const plate = document.getElementById('searchPlate').value.trim().toLowerCase();
-            const traction = document.getElementById('searchTraction').value;
+        function searchTeams() {
+            const name = document.getElementById('searchName').value.trim().toLowerCase();
+            const type = document.getElementById('searchType').value.trim().toLowerCase();
 
-            filteredVehicles = vehicles.filter(v => {
+            filteredTeams = teams.filter(t => {
                 let match = true;
-                if (company && v.company !== company) match = false;
-                if (plate && !v.plate.toLowerCase().includes(plate)) match = false;
-                if (traction && v.traction !== traction) match = false;
+                if (name && !t.name.toLowerCase().includes(name)) match = false;
+                if (type && !t.type.toLowerCase().includes(type)) match = false;
                 return match;
             });
 
@@ -1115,10 +1006,9 @@
         }
 
         function resetSearch() {
-            document.getElementById('searchCompany').value = '';
-            document.getElementById('searchPlate').value = '';
-            document.getElementById('searchTraction').value = '';
-            filteredVehicles = [...vehicles];
+            document.getElementById('searchName').value = '';
+            document.getElementById('searchType').value = '';
+            filteredTeams = [...teams];
             currentPage = 1;
             renderTable();
             updatePagination();
@@ -1133,7 +1023,7 @@
         }
 
         function nextPage() {
-            const totalPages = Math.ceil(filteredVehicles.length / pageSize);
+            const totalPages = Math.ceil(filteredTeams.length / pageSize);
             if (currentPage < totalPages) {
                 currentPage++;
                 renderTable();
