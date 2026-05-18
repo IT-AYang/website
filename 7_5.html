@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>排班计划</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 200px; background: #fff; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 14px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; }
+        .logo { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+        .sidebar-title { font-size: 14px; font-weight: 600; color: #262626; }
+        .menu { flex: 1; padding: 4px 0; overflow-y: auto; }
+        .menu-item { padding: 10px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: #595959; transition: all 0.2s; font-size: 13px; }
+        .menu-item:hover { background: #e6f7ff; color: #1890ff; }
+        .menu-item.active { background: #e6f7ff; color: #1890ff; border-right: 2px solid #1890ff; }
+        .menu-sub { background: #fafafa; }
+        .menu-sub .menu-item { padding-left: 40px; font-size: 12px; }
+        .menu-arrow { margin-left: auto; font-size: 10px; }
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: center; }
+        .search-box { width: 260px; height: 36px; background: #f5f7fa; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; }
+        .content { flex: 1; padding: 12px; overflow-y: auto; }
+        
+        .card { background: #fff; border-radius: 4px; border: 1px solid #e8e8e8; }
+        
+        .breadcrumb { padding: 12px 16px; font-size: 12px; color: #606266; }
+        .breadcrumb span { margin: 0 3px; }
+        .breadcrumb .current { color: #909399; }
+        
+        .tabs { display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid #f0f0f0; }
+        .tab { padding: 6px 16px; border-radius: 4px; font-size: 12px; cursor: pointer; transition: all 0.2s; }
+        .tab.active { background: #fff7e6; color: #fa8c16; border: 1px solid #ffd591; }
+        .tab.inactive { background: #f5f5f5; color: #909399; border: 1px solid #e8e8e8; }
+        .tab.completed { background: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f; }
+        
+        .calendar-header { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-bottom: 1px solid #f0f0f0; }
+        .calendar-title { font-size: 16px; font-weight: 600; color: #303133; }
+        .calendar-nav { display: flex; gap: 8px; }
+        .nav-btn { padding: 4px 12px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; font-size: 12px; cursor: pointer; color: #606266; }
+        .nav-btn:hover { color: #1890ff; border-color: #1890ff; }
+        
+        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; padding: 16px; }
+        .calendar-day-header { padding: 8px; text-align: center; font-size: 12px; color: #909399; font-weight: 600; }
+        .calendar-day { min-height: 100px; padding: 8px; background: #fafafa; border-radius: 4px; cursor: pointer; transition: all 0.2s; position: relative; }
+        .calendar-day:hover { background: #e6f7ff; border: 1px solid #1890ff; }
+        .calendar-day.today { border: 2px solid #1890ff; }
+        .calendar-day.selected { background: #e6f7ff; }
+        .calendar-day.other-month { opacity: 0.4; }
+        .day-number { font-size: 14px; font-weight: 600; color: #303133; margin-bottom: 8px; }
+        .day-schedule { font-size: 11px; color: #606266; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .btn { height: 36px; padding: 0 14px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .btn:hover { color: #1890ff; border-color: #1890ff; }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .btn-danger { color: #f56c6c; border-color: #fbc4c4; background: #fef0f0; }
+        .btn-danger:hover { color: #fff; background: #f56c6c; }
+        .btn-link { border: none; background: none; color: #1890ff; padding: 0 5px; }
+        
+        .menu-group .menu-item { justify-content: space-between; }
+        .menu-group-content { display: none; }
+        .menu-group.open .menu-group-content { display: block; }
+        .menu-group.open .menu-arrow { transform: rotate(180deg); }
+        
+        .side-panel { position: fixed; right: -400px; top: 0; width: 400px; height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.1); z-index: 1001; transition: right 0.3s; display: flex; flex-direction: column; }
+        .side-panel.open { right: 0; }
+        .panel-header { padding: 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h3 { font-size: 16px; font-weight: 600; color: #303133; }
+        .close-panel { background: none; border: none; font-size: 20px; cursor: pointer; color: #909399; padding: 4px; }
+        .close-panel:hover { color: #303133; }
+        .panel-body { flex: 1; padding: 16px; overflow-y: auto; }
+        .panel-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .form-item { flex: 1; }
+        .form-item label { display: block; margin-bottom: 6px; color: #606266; font-size: 12px; }
+        .form-item label .required { color: #f56c6c; margin-right: 3px; }
+        .form-item input, .form-item select { width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; outline: none; }
+        .form-item input:focus, .form-item select:focus { border-color: #1890ff; }
+        
+        .schedule-list { margin-top: 16px; }
+        .schedule-item { padding: 12px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .schedule-info { flex: 1; }
+        .schedule-name { font-size: 13px; color: #303133; }
+        .schedule-time { font-size: 12px; color: #909399; margin-top: 4px; }
+        .schedule-status { font-size: 11px; padding: 2px 6px; border-radius: 2px; }
+        .schedule-status.completed { background: #f6ffed; color: #52c41a; }
+        .schedule-status.pending { background: #fff7e6; color: #fa8c16; }
+        .schedule-status.unassigned { background: #f5f5f5; color: #909399; }
+        
+        .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: none; z-index: 1000; }
+        .panel-overlay.active { display: block; }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🚚</div>
+                <span class="sidebar-title">厂内物流调度系统</span>
+            </div>
+            <nav class="menu">
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>工作台</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📓</span>
+                        <span>基础管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('7_1.html')">
+                            <span>📄</span>
+                            <span>公司管理</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_2.html')">
+                            <span>🚗</span>
+                            <span>车辆管理</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_3.html')">
+                            <span>👥</span>
+                            <span>装卸队伍</span>
+                        </div>
+                        <div class="menu-item" onclick="navigateTo('7_4.html')">
+                            <span>👤</span>
+                            <span>装卸人员</span>
+                        </div>
+                        <div class="menu-item active">
+                            <span>📅</span>
+                            <span>排班计划</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>计划单管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item">
+                            <span>📥</span>
+                            <span>入库计划</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📤</span>
+                            <span>出库计划</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>分派管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item">
+                            <span>🏢</span>
+                            <span>物流公司指派</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>🚗</span>
+                            <span>车辆指派</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>👥</span>
+                            <span>装卸队指派</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📅</span>
+                        <span>预约管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item">
+                            <span>🚗</span>
+                            <span>车辆预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📥</span>
+                            <span>入库预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📤</span>
+                            <span>出库预约</span>
+                        </div>
+                        <div class="menu-item">
+                            <span>📋</span>
+                            <span>预约管理</span>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-box">
+                    <span style="color: #909399; font-size: 13px;">菜单搜索</span>
+                </div>
+            </header>
+
+            <div class="content">
+                <div class="card">
+                    <div class="breadcrumb">
+                        基础管理
+                        <span>/</span>
+                        <span class="current">排班计划</span>
+                    </div>
+
+                    <div class="tabs">
+                        <div class="tab completed" id="tabCompleted" onclick="switchTab('completed')">已排班</div>
+                        <div class="tab inactive" id="tabUnassigned" onclick="switchTab('unassigned')">未排班</div>
+                        <div class="tab active" id="tabPending" onclick="switchTab('pending')">待排班</div>
+                    </div>
+
+                    <div class="calendar-header">
+                        <div class="calendar-title" id="calendarTitle">2026年4月</div>
+                        <div class="calendar-nav">
+                            <button class="nav-btn" onclick="prevMonth()">上个月</button>
+                            <button class="nav-btn" onclick="goToday()">今天</button>
+                            <button class="nav-btn" onclick="nextMonth()">下个月</button>
+                        </div>
+                    </div>
+
+                    <div class="calendar-grid" id="calendarGrid">
+                        <div class="calendar-day-header">一</div>
+                        <div class="calendar-day-header">二</div>
+                        <div class="calendar-day-header">三</div>
+                        <div class="calendar-day-header">四</div>
+                        <div class="calendar-day-header">五</div>
+                        <div class="calendar-day-header">六</div>
+                        <div class="calendar-day-header">日</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <h3 id="panelTitle">排班-添加</h3>
+            <button class="close-panel" onclick="closePanel()">×</button>
+        </div>
+        <div class="panel-body">
+            <div class="form-row">
+                <div class="form-item">
+                    <label><span class="required">*</span>人员选择</label>
+                    <select id="schedulePerson">
+                        <option value="">请选择人员</option>
+                        <option value="张明">张明</option>
+                        <option value="李华">李华</option>
+                        <option value="王芳">王芳</option>
+                        <option value="刘强">刘强</option>
+                        <option value="赵敏">赵敏</option>
+                        <option value="陈军">陈军</option>
+                        <option value="周杰">周杰</option>
+                        <option value="吴敏">吴敏</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label><span class="required">*</span>工作时间段</label>
+                    <select id="scheduleTime">
+                        <option value="">请选择时间段</option>
+                        <option value="08:00-12:00">08:00-12:00</option>
+                        <option value="13:00-17:00">13:00-17:00</option>
+                        <option value="08:00-17:00">08:00-17:00</option>
+                        <option value="17:00-21:00">17:00-21:00</option>
+                        <option value="21:00-08:00">21:00-08:00</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-item">
+                    <label>工作状态</label>
+                    <select id="scheduleStatus">
+                        <option value="pending">待排班</option>
+                        <option value="completed">已排班</option>
+                    </select>
+                </div>
+                <div class="form-item">
+                    <label>排班日期</label>
+                    <input type="text" id="scheduleDate" readonly>
+                </div>
+            </div>
+            <div class="schedule-list" id="scheduleList">
+                <div style="text-align: center; color: #909399; padding: 20px;">暂无数据</div>
+            </div>
+        </div>
+        <div class="panel-footer">
+            <button class="btn btn-primary" onclick="addSchedule()">新增</button>
+            <button class="btn" onclick="closePanel()">取消</button>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'scheduleManagementData';
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+        let currentTab = 'pending';
+        let schedules = [];
+
+        function getSchedules() {
+            const data = localStorage.getItem(STORAGE_KEY);
+            if (data) {
+                return JSON.parse(data);
+            }
+            const defaultSchedules = [
+                { id: 1, date: '2026-04-15', person: '张明', time: '08:00-12:00', status: 'completed' },
+                { id: 2, date: '2026-04-15', person: '李华', time: '13:00-17:00', status: 'completed' },
+                { id: 3, date: '2026-04-16', person: '王芳', time: '08:00-12:00', status: 'completed' },
+                { id: 4, date: '2026-04-18', person: '刘强', time: '08:00-17:00', status: 'pending' },
+                { id: 5, date: '2026-04-19', person: '赵敏', time: '17:00-21:00', status: 'pending' },
+                { id: 6, date: '2026-04-20', person: '陈军', time: '08:00-12:00', status: 'pending' },
+            ];
+            saveSchedules(defaultSchedules);
+            return defaultSchedules;
+        }
+
+        function saveSchedules(data) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function init() {
+            schedules = getSchedules();
+            renderCalendar();
+        }
+
+        function renderCalendar() {
+            const grid = document.getElementById('calendarGrid');
+            const header = grid.innerHTML.substring(0, grid.innerHTML.indexOf('<div class="calendar-day'));
+            grid.innerHTML = header;
+
+            const firstDay = new Date(currentYear, currentMonth, 1);
+            const lastDay = new Date(currentYear, currentMonth + 1, 0);
+            const startDay = firstDay.getDay() || 7;
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+
+            const prevMonthLastDay = new Date(currentYear, currentMonth, 0).getDate();
+            for (let i = startDay - 1; i > 0; i--) {
+                const date = prevMonthLastDay - i + 1;
+                const fullDate = formatDate(new Date(currentYear, currentMonth - 1, date));
+                addDayCell(date, fullDate, true);
+            }
+
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                const fullDate = formatDate(new Date(currentYear, currentMonth, i));
+                const isToday = fullDate === todayStr;
+                addDayCell(i, fullDate, false, isToday);
+            }
+
+            const remainingCells = 42 - (startDay - 1) - lastDay.getDate();
+            for (let i = 1; i <= remainingCells; i++) {
+                const fullDate = formatDate(new Date(currentYear, currentMonth + 1, i));
+                addDayCell(i, fullDate, true);
+            }
+
+            document.getElementById('calendarTitle').textContent = `${currentYear}年${currentMonth + 1}月`;
+        }
+
+        function addDayCell(day, fullDate, isOtherMonth, isToday) {
+            const grid = document.getElementById('calendarGrid');
+            const daySchedule = getDaySchedule(fullDate);
+            const scheduleCount = daySchedule.length;
+            
+            let cell = document.createElement('div');
+            cell.className = 'calendar-day';
+            if (isOtherMonth) cell.classList.add('other-month');
+            if (isToday) cell.classList.add('today');
+            
+            cell.innerHTML = `
+                <div class="day-number">${day}</div>
+                ${daySchedule.map(s => `<div class="day-schedule">${s.person}: ${s.time}</div>`).join('')}
+                ${scheduleCount === 0 && !isOtherMonth ? '<div style="color: #909399; font-size: 11px; margin-top: 4px;">点击新增排班</div>' : ''}
+            `;
+            
+            if (!isOtherMonth) {
+                cell.onclick = () => openPanel(fullDate);
+            }
+            
+            grid.appendChild(cell);
+        }
+
+        function getDaySchedule(date) {
+            return schedules.filter(s => s.date === date && s.status === currentTab);
+        }
+
+        function formatDate(date) {
+            return date.toISOString().split('T')[0];
+        }
+
+        function prevMonth() {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            renderCalendar();
+        }
+
+        function goToday() {
+            const today = new Date();
+            currentYear = today.getFullYear();
+            currentMonth = today.getMonth();
+            renderCalendar();
+        }
+
+        function switchTab(tab) {
+            currentTab = tab;
+            
+            document.getElementById('tabCompleted').className = 'tab completed';
+            document.getElementById('tabUnassigned').className = 'tab inactive';
+            document.getElementById('tabPending').className = 'tab active';
+            
+            if (tab === 'completed') {
+                document.getElementById('tabCompleted').classList.add('active');
+                document.getElementById('tabPending').classList.remove('active');
+            } else if (tab === 'unassigned') {
+                document.getElementById('tabUnassigned').classList.add('active');
+                document.getElementById('tabPending').classList.remove('active');
+            }
+            
+            renderCalendar();
+        }
+
+        function openPanel(date) {
+            document.getElementById('scheduleDate').value = date;
+            document.getElementById('scheduleList').innerHTML = '';
+            const daySchedules = schedules.filter(s => s.date === date);
+            if (daySchedules.length === 0) {
+                document.getElementById('scheduleList').innerHTML = '<div style="text-align: center; color: #909399; padding: 20px;">暂无数据</div>';
+            } else {
+                document.getElementById('scheduleList').innerHTML = daySchedules.map(s => `
+                    <div class="schedule-item">
+                        <div class="schedule-info">
+                            <div class="schedule-name">${s.person}</div>
+                            <div class="schedule-time">${s.time}</div>
+                        </div>
+                        <div class="schedule-status ${s.status}">${s.status === 'completed' ? '已排班' : s.status === 'pending' ? '待排班' : '未排班'}</div>
+                    </div>
+                `).join('');
+            }
+            document.getElementById('panelOverlay').classList.add('active');
+            document.getElementById('sidePanel').classList.add('open');
+        }
+
+        function closePanel() {
+            document.getElementById('panelOverlay').classList.remove('active');
+            document.getElementById('sidePanel').classList.remove('open');
+        }
+
+        function addSchedule() {
+            const date = document.getElementById('scheduleDate').value;
+            const person = document.getElementById('schedulePerson').value;
+            const time = document.getElementById('scheduleTime').value;
+            const status = document.getElementById('scheduleStatus').value;
+
+            if (!person) {
+                alert('请选择人员');
+                return;
+            }
+            if (!time) {
+                alert('请选择工作时间段');
+                return;
+            }
+
+            const maxId = schedules.length > 0 ? Math.max(...schedules.map(s => s.id)) : 0;
+            schedules.push({
+                id: maxId + 1,
+                date,
+                person,
+                time,
+                status
+            });
+
+            saveSchedules(schedules);
+            renderCalendar();
+            openPanel(date);
+            document.getElementById('schedulePerson').value = '';
+            document.getElementById('scheduleTime').value = '';
+        }
+
+        function toggleMenu(el) {
+            const group = el.parentElement;
+            group.classList.toggle('open');
+        }
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
