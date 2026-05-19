@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预约管理</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        body { background: #f5f7fa; min-height: 100vh; }
+        .app-layout { display: flex; min-height: 100vh; }
+        
+        .sidebar { width: 200px; background: #fff; border-right: 1px solid #e8e8e8; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 14px 16px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f0f0f0; }
+        .logo { width: 28px; height: 28px; background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #fff; font-size: 16px; }
+        .sidebar-title { font-size: 14px; font-weight: 600; color: #262626; }
+        .menu { flex: 1; padding: 4px 0; overflow-y: auto; }
+        .menu-item { padding: 10px 16px; display: flex; align-items: center; gap: 8px; cursor: pointer; color: #595959; transition: all 0.2s; font-size: 13px; }
+        .menu-item:hover { background: #e6f7ff; color: #1890ff; }
+        .menu-item.active { background: #e6f7ff; color: #1890ff; border-right: 2px solid #1890ff; }
+        .menu-sub { background: #fafafa; }
+        .menu-sub .menu-item { padding-left: 40px; font-size: 12px; }
+        .menu-arrow { margin-left: auto; font-size: 10px; }
+        
+        .main-content { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+        .topbar { height: 56px; background: #fff; border-bottom: 1px solid #e8e8e8; display: flex; align-items: center; justify-content: center; }
+        .search-box { width: 260px; height: 36px; background: #f5f7fa; border-radius: 4px; display: flex; align-items: center; padding: 0 12px; font-size: 12px; color: #909399; }
+        .content { flex: 1; padding: 12px; overflow-y: auto; }
+        
+        .card { background: #fff; border-radius: 4px; border: 1px solid #e8e8e8; }
+        
+        .breadcrumb { padding: 12px 16px; font-size: 12px; color: #606266; }
+        .breadcrumb span { margin: 0 3px; }
+        .breadcrumb .current { color: #909399; }
+        
+        .search-bar { padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; border-bottom: 1px solid #f0f0f0; }
+        .search-item { display: flex; align-items: center; gap: 0; }
+        .search-item label { font-size: 12px; color: #606266; white-space: nowrap; background: #f5f7fa; padding: 7px 10px; border: 1px solid #e4e7ed; border-right: none; border-radius: 4px 0 0 4px; }
+        .search-item input { height: 36px; padding: 6px 10px; border: 1px solid #e4e7ed; border-radius: 0 4px 4px 0; font-size: 12px; outline: none; min-width: 200px; }
+        .search-item input:focus { border-color: #1890ff; }
+        .search-btns { display: flex; gap: 10px; margin-left: auto; }
+        
+        .btn { height: 36px; padding: 0 14px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; color: #606266; font-size: 12px; cursor: pointer; display: inline-flex; align-items: center; gap: 5px; transition: all 0.2s; }
+        .btn:hover { color: #1890ff; border-color: #1890ff; }
+        .btn-primary { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .btn-primary:hover { background: #40a9ff; border-color: #40a9ff; }
+        .btn-link { border: none; background: none; color: #1890ff; padding: 0 5px; }
+        .btn-link:hover { color: #40a9ff; }
+        
+        .table-container { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; font-size: 12px; }
+        th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+        th { background: #fafafa; font-weight: 600; color: #303133; }
+        td { color: #606266; }
+        tbody tr:hover { background: #f5f7fa; }
+        .status-pending { color: #faad14; background: #fffbe6; padding: 2px 8px; border-radius: 3px; display: inline-block; }
+        .status-confirmed { color: #52c41a; background: #f6ffed; padding: 2px 8px; border-radius: 3px; display: inline-block; }
+        .status-cancelled { color: #f56c6c; background: #fef0f0; padding: 2px 8px; border-radius: 3px; display: inline-block; }
+        .table-actions { display: flex; gap: 3px; }
+        
+        .pagination { padding: 10px 16px; display: flex; align-items: center; justify-content: space-between; font-size: 12px; color: #606266; }
+        .pagination-right { display: flex; align-items: center; gap: 10px; }
+        .page-select { padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; }
+        .page-btn { width: 28px; height: 28px; border: 1px solid #dcdfe6; border-radius: 4px; background: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px; }
+        .page-btn:hover { color: #1890ff; border-color: #1890ff; }
+        .page-btn.active { background: #1890ff; color: #fff; border-color: #1890ff; }
+        .page-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .page-jump { display: flex; align-items: center; gap: 6px; }
+        .page-jump input { width: 44px; padding: 3px 6px; border: 1px solid #dcdfe6; border-radius: 4px; text-align: center; font-size: 12px; }
+        
+        .checkbox { width: 14px; height: 14px; cursor: pointer; }
+        
+        .side-panel { position: fixed; right: -450px; top: 0; width: 450px; height: 100%; background: #fff; box-shadow: -2px 0 12px rgba(0, 0, 0, 0.15); z-index: 1001; transition: right 0.3s; display: flex; flex-direction: column; }
+        .side-panel.open { right: 0; }
+        .panel-header { padding: 16px; border-bottom: 1px solid #f0f0f0; display: flex; justify-content: space-between; align-items: center; }
+        .panel-header h3 { font-size: 14px; font-weight: 600; color: #303133; }
+        .close-panel { background: none; border: none; font-size: 18px; cursor: pointer; color: #909399; padding: 4px; }
+        .close-panel:hover { color: #303133; }
+        .panel-body { flex: 1; padding: 16px; overflow-y: auto; }
+        .panel-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        .form-item { margin-bottom: 16px; }
+        .form-item label { display: block; margin-bottom: 6px; color: #606266; font-size: 12px; }
+        .form-item label .required { color: #f56c6c; margin-right: 3px; }
+        .form-item input, .form-item select, .form-item textarea { width: 100%; height: 36px; padding: 6px 10px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 12px; outline: none; }
+        .form-item textarea { height: 60px; resize: vertical; }
+        .form-item input:focus, .form-item select:focus, .form-item textarea:focus { border-color: #1890ff; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-item { flex: 1; }
+        
+        .panel-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.45); display: none; z-index: 1000; }
+        .panel-overlay.active { display: block; }
+        
+        .menu-group .menu-item { justify-content: space-between; }
+        .menu-group-content { display: none; }
+        .menu-group.open .menu-group-content { display: block; }
+        .menu-group.open .menu-arrow { transform: rotate(180deg); }
+        
+        .info-label { color: #909399; font-size: 12px; margin-bottom: 4px; }
+        .info-value { color: #303133; font-size: 12px; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="app-layout">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">🚚</div>
+                <span class="sidebar-title">厂内物流调度系统</span>
+            </div>
+            <nav class="menu">
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>工作台</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📓</span>
+                        <span>基础管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('7_1.html')"><span>📄</span><span>公司管理</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_2.html')"><span>🚗</span><span>车辆管理</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_3.html')"><span>👥</span><span>装卸队伍</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_4.html')"><span>👤</span><span>装卸人员</span></div>
+                        <div class="menu-item" onclick="navigateTo('7_5.html')"><span>📅</span><span>排班计划</span></div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>计划单管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('8_1.html')"><span>📥</span><span>入库计划</span></div>
+                        <div class="menu-item" onclick="navigateTo('8_2.html')"><span>📤</span><span>出库计划</span></div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📋</span>
+                        <span>分派管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('9_1.html')"><span>🏢</span><span>物流公司指派</span></div>
+                        <div class="menu-item" onclick="navigateTo('9_2.html')"><span>🚗</span><span>车辆指派</span></div>
+                        <div class="menu-item" onclick="navigateTo('9_3.html')"><span>👥</span><span>装卸队指派</span></div>
+                    </div>
+                </div>
+                <div class="menu-group open">
+                    <div class="menu-item" onclick="toggleMenu(this)">
+                        <span>📅</span>
+                        <span>预约管理</span>
+                        <span class="menu-arrow">∨</span>
+                    </div>
+                    <div class="menu-group-content menu-sub">
+                        <div class="menu-item" onclick="navigateTo('10_1.html')"><span>🚗</span><span>车辆预约</span></div>
+                        <div class="menu-item" onclick="navigateTo('10_2.html')"><span>📥</span><span>入库预约</span></div>
+                        <div class="menu-item" onclick="navigateTo('10_3.html')"><span>📤</span><span>出库预约</span></div>
+                        <div class="menu-item active"><span>📋</span><span>预约管理</span></div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <div class="search-box">菜单搜索</div>
+            </header>
+
+            <div class="content">
+                <div class="card">
+                    <div class="breadcrumb">
+                        预约管理
+                        <span>/</span>
+                        <span class="current">预约管理</span>
+                    </div>
+
+                    <div class="search-bar">
+                        <div class="search-item">
+                            <label>车牌号</label>
+                            <input type="text" id="searchPlate" placeholder="请输入车牌号">
+                        </div>
+                        <div class="search-item">
+                            <label>计划单号</label>
+                            <input type="text" id="searchOrderNo" placeholder="请输入计划单号">
+                        </div>
+                        <div class="search-btns">
+                            <button class="btn btn-primary" onclick="searchOrders()">
+                                <span>🔍</span>
+                                查询
+                            </button>
+                            <button class="btn" onclick="resetSearch()">
+                                <span>🔄</span>
+                                重置
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="table-container">
+                        <table id="orderTable">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" class="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                                    <th>计划单号</th>
+                                    <th>司机姓名</th>
+                                    <th>联系方式</th>
+                                    <th>车牌号</th>
+                                    <th>易燃易爆</th>
+                                    <th>入库日期</th>
+                                    <th>入库时间段</th>
+                                    <th>预约状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="pagination">
+                        <div class="pagination-left">
+                            共 <span id="totalCount">0</span> 条
+                            <select class="page-select" id="pageSize" onchange="changePageSize()">
+                                <option value="10">10条/页</option>
+                                <option value="20" selected>20条/页</option>
+                                <option value="50">50条/页</option>
+                            </select>
+                        </div>
+                        <div class="pagination-right">
+                            <button class="page-btn" id="prevBtn" onclick="prevPage()" disabled>◀</button>
+                            <button class="page-btn active" id="page1">1</button>
+                            <button class="page-btn" id="nextBtn" onclick="nextPage()">▶</button>
+                            <div class="page-jump">
+                                前往
+                                <input type="number" id="jumpPage" min="1" value="1">
+                                页
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div class="panel-overlay" id="panelOverlay" onclick="closePanel()"></div>
+    <div class="side-panel" id="sidePanel">
+        <div class="panel-header">
+            <h3 id="panelTitle">物料信息</h3>
+            <button class="close-panel" onclick="closePanel()">×</button>
+        </div>
+        <div class="panel-body" id="panelBody">
+        </div>
+        <div class="panel-footer" id="panelFooter">
+        </div>
+    </div>
+
+    <script>
+        let orders = [
+            { id: 1, orderNo: 'OMP20221202-002', driverName: '张大贵', phone: '15868165', plate: '川A98989', isFlammable: '否', date: '2022-12-10', timeSlot: '下午', status: '预约成功' }
+        ];
+        let selectedIds = new Set();
+        let currentPage = 1;
+        let pageSize = 20;
+        let filteredOrders = [...orders];
+        let currentOrder = null;
+
+        function init() {
+            renderTable();
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredOrders.slice(start, end);
+
+            if (pageData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="10" style="text-align: center; padding: 40px; color: #909399;">暂无数据</td></tr>';
+            } else {
+                tbody.innerHTML = pageData.map(order => `
+                    <tr>
+                        <td><input type="checkbox" class="checkbox" data-id="${order.id}" ${selectedIds.has(order.id) ? 'checked' : ''} onchange="toggleSelect(${order.id})"></td>
+                        <td>${order.orderNo}</td>
+                        <td>${order.driverName}</td>
+                        <td>${order.phone}</td>
+                        <td>${order.plate}</td>
+                        <td>${order.isFlammable}</td>
+                        <td>${order.date}</td>
+                        <td>${order.timeSlot}</td>
+                        <td><span class="status-${order.status === '预约成功' ? 'confirmed' : order.status === '待确认' ? 'pending' : 'cancelled'}">${order.status}</span></td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-link" onclick="viewMaterials(${order.id})">物料信息</button>
+                            </div>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+            updatePagination();
+        }
+
+        function updatePagination() {
+            document.getElementById('totalCount').textContent = filteredOrders.length;
+            const totalPages = Math.ceil(filteredOrders.length / pageSize);
+            
+            document.getElementById('prevBtn').disabled = currentPage <= 1;
+            document.getElementById('nextBtn').disabled = currentPage >= totalPages;
+            
+            let pageBtns = document.querySelectorAll('.page-btn:not(#prevBtn,#nextBtn)');
+            pageBtns.forEach(btn => btn.remove());
+            
+            for (let i = 1; i <= totalPages; i++) {
+                const btn = document.createElement('button');
+                btn.className = `page-btn ${i === currentPage ? 'active' : ''}`;
+                btn.textContent = i;
+                btn.onclick = () => goToPage(i);
+                document.getElementById('prevBtn').after(btn);
+            }
+        }
+
+        function goToPage(page) {
+            currentPage = page;
+            renderTable();
+            document.getElementById('jumpPage').value = page;
+        }
+
+        function prevPage() {
+            if (currentPage > 1) goToPage(currentPage - 1);
+        }
+
+        function nextPage() {
+            const totalPages = Math.ceil(filteredOrders.length / pageSize);
+            if (currentPage < totalPages) goToPage(currentPage + 1);
+        }
+
+        function changePageSize() {
+            pageSize = parseInt(document.getElementById('pageSize').value);
+            goToPage(1);
+        }
+
+        function toggleSelect(id) {
+            if (selectedIds.has(id)) {
+                selectedIds.delete(id);
+            } else {
+                selectedIds.add(id);
+            }
+        }
+
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const start = (currentPage - 1) * pageSize;
+            const end = start + pageSize;
+            const pageData = filteredOrders.slice(start, end);
+            if (selectAll.checked) {
+                pageData.forEach(order => selectedIds.add(order.id));
+            } else {
+                pageData.forEach(order => selectedIds.delete(order.id));
+            }
+            renderTable();
+        }
+
+        function viewMaterials(id) {
+            currentOrder = orders.find(o => o.id === id);
+            document.getElementById('panelTitle').textContent = '物料信息';
+            document.getElementById('panelBody').innerHTML = `
+                <div class="info-label">计划单号</div>
+                <div class="info-value">${currentOrder.orderNo}</div>
+                <div class="info-label">司机姓名</div>
+                <div class="info-value">${currentOrder.driverName}</div>
+                <div class="info-label">联系方式</div>
+                <div class="info-value">${currentOrder.phone}</div>
+                <div class="info-label">车牌号</div>
+                <div class="info-value">${currentOrder.plate}</div>
+                <div class="info-label">易燃易爆</div>
+                <div class="info-value">${currentOrder.isFlammable}</div>
+                <div class="info-label">入库日期</div>
+                <div class="info-value">${currentOrder.date}</div>
+                <div class="info-label">入库时间段</div>
+                <div class="info-value">${currentOrder.timeSlot}</div>
+                <div class="info-label">预约状态</div>
+                <div class="info-value">${currentOrder.status}</div>
+                <div style="margin-top: 20px;">
+                    <div class="info-label">物料列表</div>
+                    <div style="border: 1px solid #e8e8e8; border-radius: 4px; padding: 12px;">
+                        <div style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">物料A - 100件</div>
+                        <div style="padding: 8px 0; border-bottom: 1px solid #f0f0f0;">物料B - 200件</div>
+                        <div style="padding: 8px 0;">物料C - 50件</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('panelFooter').innerHTML = `
+                <button class="btn" onclick="closePanel()">关闭</button>
+            `;
+            document.getElementById('panelOverlay').classList.add('active');
+            document.getElementById('sidePanel').classList.add('open');
+        }
+
+        function closePanel() {
+            document.getElementById('panelOverlay').classList.remove('active');
+            document.getElementById('sidePanel').classList.remove('open');
+        }
+
+        function searchOrders() {
+            const searchPlate = document.getElementById('searchPlate').value;
+            const searchOrderNo = document.getElementById('searchOrderNo').value;
+            filteredOrders = orders.filter(order => {
+                if (searchPlate && !order.plate.includes(searchPlate)) return false;
+                if (searchOrderNo && !order.orderNo.includes(searchOrderNo)) return false;
+                return true;
+            });
+            currentPage = 1;
+            renderTable();
+        }
+
+        function resetSearch() {
+            document.getElementById('searchPlate').value = '';
+            document.getElementById('searchOrderNo').value = '';
+            filteredOrders = [...orders];
+            currentPage = 1;
+            renderTable();
+        }
+
+        function toggleMenu(el) {
+            el.parentElement.classList.toggle('open');
+        }
+
+        function navigateTo(url) {
+            window.location.href = url;
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
